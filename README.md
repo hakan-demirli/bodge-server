@@ -1,0 +1,22 @@
+#TODO
+* [ ] use templates for the sidebar and the navbar
+* [ ] Add login and logout links to navbar
+* [ ] use templates with another page to be sure they are working
+* [ ] add templated gridstack as a route/serve
+    * [ ] implement serialization backend
+        * [ ] id based dictionary. Give id to all widgets
+    * [ ] add all old cards
+* [ ] Add dynamic sidebar
+* [ ] Add a kanban webpage
+* [ ] Add a calendar webpage
+* [ ] Add a notepad webpage
+* [ ] Add a filebrowser webpage
+* [ ] Add a music/video player webpage
+* [ ] Add inter plugin communication
+* [ ] Add script_center
+    * [ ] Add TTS
+    * [ ] Add STT
+    * [ ] Add intent engine
+
+
+Templates tutorial: https://www.digitalocean.com/community/tutorials/how-to-use-templates-in-a-flask-application
