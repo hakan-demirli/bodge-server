@@ -1,5 +1,5 @@
 #TODO
-* [ ] use templates for the sidebar and the navbar
+* [x] use templates for the sidebar and the navbar
 * [ ] Add login and logout links to navbar
 * [ ] use templates with another page to be sure they are working
 * [ ] add templated gridstack as a route/serve
