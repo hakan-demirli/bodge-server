@@ -1,4 +1,6 @@
 #TODO
+* [ ] Use blueprints for all pages
+* [ ] Use iframe for cards
 * [x] use templates for the sidebar and the navbar
 * [x] Add login and logout links to navbar
 * [x] use templates with another page to be sure they are working
