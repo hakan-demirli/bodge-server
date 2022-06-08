@@ -2,7 +2,10 @@
 {% block title %} Dashboard {% endblock %}
 
 <!-- Specific Page CSS goes HERE  -->
-{% block stylesheets %}{% endblock stylesheets %}
+{% block stylesheets %}
+<link href="/static/plugins/fontawesome/css/all.min.css" rel="stylesheet">
+
+{% endblock stylesheets %}
 
 {% block content %}
     <div class="container-fluid">
@@ -13,9 +16,23 @@
             optional, and just for demonstration. Just create an element with the <code>#menu-toggle</code> ID which
             will toggle the menu when clicked.</p>
     </div>
+    <span id='icon-only' class='log-event' style='display: inline-block'> <i class='fa-solid fa-calendar fa-9x'></i></span>
+
 {% endblock content %}
 
 <!-- Specific Page JS goes HERE  -->
 {% block javascripts %}
-<!-- Bootstrap core JavaScript -->
+
+<!-- Popperjs -->
+<script src="/static/plugins/popper/popper.min.js"></script>
+<!-- Tempus Dominus JavaScript -->
+<script src="/static/plugins/tempusdominus/js/tempus-dominus.min.js" crossorigin="anonymous"></script>
+
+<!-- Tempus Dominus Styles -->
+<link href="/static/plugins/tempusdominus/css/tempus-dominus.min.css" rel="stylesheet" crossorigin="anonymous">
+
+<script>
+
+    new tempusDominus.TempusDominus(document.getElementById('icon-only'));
+</script>
 {% endblock javascripts %}
