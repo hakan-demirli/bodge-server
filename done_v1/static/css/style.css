@@ -42,3 +42,9 @@
     margin-left: -15rem;
   }
 }
+
+.nav-item:hover,
+.nav-item:focus {
+  color: rgba(0, 0, 0, .85);
+  background-color: #d2f4ea;
+}

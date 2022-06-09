@@ -5,12 +5,13 @@ from ..Plugin import Plugin
 import time, json, os
 
 class MyPlugin(Plugin):
-    bp = Blueprint( name='dashboard',
+    bp = Blueprint( name='Dashboard',
                 import_name=__name__,
                 url_prefix='/dashboard',
                 template_folder='templates',
                 static_folder='static')
     user_data_path = Path(__file__).parent / 'dashboard.json'
+    icon = 'fa-solid fa-border-all'
 
 
     def __init__(self,all_q,my_q):

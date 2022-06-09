@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, redirect, make_response
+from flask import Flask, request, jsonify, redirect, make_response, redirect
 from flask_simplelogin import SimpleLogin, login_required
 from importlib import import_module
 from pathlib import Path
@@ -21,12 +21,14 @@ class MyFlaskServer():
         SimpleLogin(self.app)
         self.__registerAllBlueprints()
         self.__initUserData()
+        self.app.add_url_rule('/backend', 'backend', self.__baseBackend, methods=["POST"])
+        self.app.add_url_rule('/', 'root', self.__rootRoute, methods=["GET"])
 
     def __initUserData(self):
         if(not isfile(self.user_data_file_path)):
             self.user_data_json = {"sidebar": {"order":[]}, "navbar": {}, "settings":{}}
             for val in self.plugins:
-                self.user_data_json["sidebar"]["order"].append({"name":(val.bp.name),"url":(val.bp.url_prefix)})
+                self.user_data_json["sidebar"]["order"].append({"name":(val.bp.name),"url":(val.bp.url_prefix),"icon":val.icon})
             with open(self.user_data_file_path, 'w') as outfile:
                 json.dump(self.user_data_json, outfile, indent=4)
 
@@ -38,7 +40,7 @@ class MyFlaskServer():
             self.app.register_blueprint(tmp.bp)
             self.plugins.append(tmp)
 
-    def base_backend(self):
+    def __baseBackend(self):
         req = request.get_json()
         jsn_res = {}
         match req['command']:
@@ -50,7 +52,9 @@ class MyFlaskServer():
                     json.dump(req, outfile, indent=4)
         return make_response(jsonify(jsn_res), 200)
 
+    def __rootRoute(self):
+        return redirect("/dashboard", code=302)
+
 if __name__ == "__main__":
     mfs = MyFlaskServer()
-    mfs.app.add_url_rule('/backend', 'backend', mfs.base_backend, methods=["POST"])
     mfs.app.run(host='0.0.0.0',debug=True)

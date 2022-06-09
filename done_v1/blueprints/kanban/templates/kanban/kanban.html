@@ -3,8 +3,7 @@
 
 <!-- Specific Page CSS goes HERE  -->
 {% block stylesheets %}
-<link href="/kanban/static/fontawesome/css/all.min.css" rel="stylesheet">
-<link href="/kanban/static/tempusdominus/css/tempus-dominus.min.css" rel="stylesheet">
+<link href="/kanban/static/plugins/tempusdominus/css/tempus-dominus.min.css" rel="stylesheet">
 {% endblock stylesheets %}
 
 {% block content %}
@@ -21,8 +20,8 @@
 
 <!-- Specific Page JS goes HERE  -->
 {% block javascripts %}
-<script src="/kanban/static/popper/popper.min.js"></script>
-<script src="/kanban/static/tempusdominus/js/tempus-dominus.min.js"></script>
+<script src="/kanban/static/plugins/popper/popper.min.js"></script>
+<script src="/kanban/static/plugins/tempusdominus/js/tempus-dominus.min.js"></script>
 <script>
     new tempusDominus.TempusDominus(document.getElementById('icon-only'));
 </script>

@@ -25,14 +25,21 @@ function sidebarReadBackend() {
             return;
         }
         response.json().then(function (data) {
-        console.log(data);
-    });
+            data["sidebar"]["order"].forEach(function(val, idx){
+                let tml = `<li class="nav-item">
+                            <a href="${val['url']}" class="nav-link" aria-current="page">
+                            <i class="${val["icon"]}"></i>
+                            ${val['name']}
+                            </a>
+                        </li>`;
+                document.getElementById('base-sidebar').innerHTML += tml;
+            });
+        });
     })
     .catch(function (error) {
         console.log("Fetch error: " + error);
     });
 }
-
 
 sidebarReadBackend()
 

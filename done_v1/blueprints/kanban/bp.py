@@ -5,13 +5,13 @@ from ..Plugin import Plugin
 import time, json, os
 
 class MyPlugin(Plugin):
-    bp = Blueprint( name='kanban',
+    bp = Blueprint( name='Kanban',
                 import_name=__name__,
                 url_prefix='/kanban',
                 template_folder='templates',
                 static_folder='static')
     user_data_path = Path(__file__).parent / 'kanban.json'
-
+    icon = 'fa-solid fa-table-columns'
 
     def __init__(self,all_q,my_q):
         Plugin.__init__(self,all_q,my_q)
