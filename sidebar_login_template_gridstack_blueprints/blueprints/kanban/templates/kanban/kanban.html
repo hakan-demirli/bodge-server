@@ -3,8 +3,8 @@
 
 <!-- Specific Page CSS goes HERE  -->
 {% block stylesheets %}
-<link href="/static/plugins/fontawesome/css/all.min.css" rel="stylesheet">
-
+<link href="/static/kanban/fontawesome/css/all.min.css" rel="stylesheet">
+<link href="/static/kanban/tempusdominus/css/tempus-dominus.min.css" rel="stylesheet">
 {% endblock stylesheets %}
 
 {% block content %}
@@ -17,22 +17,13 @@
             will toggle the menu when clicked.</p>
     </div>
     <span id='icon-only' class='log-event' style='display: inline-block'> <i class='fa-solid fa-calendar fa-9x'></i></span>
-
 {% endblock content %}
 
 <!-- Specific Page JS goes HERE  -->
 {% block javascripts %}
-
-<!-- Popperjs -->
-<script src="/static/plugins/popper/popper.min.js"></script>
-<!-- Tempus Dominus JavaScript -->
-<script src="/static/plugins/tempusdominus/js/tempus-dominus.min.js" crossorigin="anonymous"></script>
-
-<!-- Tempus Dominus Styles -->
-<link href="/static/plugins/tempusdominus/css/tempus-dominus.min.css" rel="stylesheet" crossorigin="anonymous">
-
+<script src="/static/kanban/popper/popper.min.js"></script>
+<script src="/static/kanban/tempusdominus/js/tempus-dominus.min.js"></script>
 <script>
-
     new tempusDominus.TempusDominus(document.getElementById('icon-only'));
 </script>
 {% endblock javascripts %}
