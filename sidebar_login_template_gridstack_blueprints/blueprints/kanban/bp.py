@@ -2,9 +2,13 @@ from flask import Blueprint, render_template
 from flask_simplelogin import login_required
 
 
-bp = Blueprint('kanban', __name__, template_folder='templates', static_folder='static',static_url_path='/static/kanban')
+bp = Blueprint( name='kanban',
+                import_name=__name__,
+                url_prefix='/kanban',
+                template_folder='templates',
+                static_folder='static')
 
-@bp.route('/kanban')
+@bp.route('/')
 @login_required
 def kanban():
     return render_template('kanban/kanban.html')

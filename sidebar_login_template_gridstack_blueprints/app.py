@@ -30,14 +30,13 @@ class MyFlaskServer():
     def __registerAllBlueprints(self):
         pn = []
         for index, path in enumerate(self.blueprints_path.rglob('bp.py')):
-            # find all bp.py paths and convert them to modules
             PLUGIN_NAME = str(path.relative_to(self.root_path).with_suffix('')).replace('\\','.')
-            # print(PLUGIN_NAME)
             pn.append(PLUGIN_NAME)
 
         for index, pname in enumerate(pn):
             plugin_module = import_module(pn[index])
             self.app.register_blueprint(plugin_module.bp)
+            print(plugin_module.bp.url_prefix)
 
     @app.route('/sidebar')
     @login_required

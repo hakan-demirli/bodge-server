@@ -2,7 +2,11 @@ from flask import Blueprint, render_template
 from flask_simplelogin import login_required
 
 
-bp = Blueprint('dashboard', __name__, template_folder='templates', static_folder='static',static_url_path='/static/dashboard')
+bp = Blueprint( name='dashboard',
+                import_name=__name__,
+                url_prefix='/dashboard',
+                template_folder='templates',
+                static_folder='static')
 
 @bp.route('/')
 @login_required
