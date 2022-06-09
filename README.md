@@ -28,3 +28,5 @@
 Templates tutorial: https://www.digitalocean.com/community/tutorials/how-to-use-templates-in-a-flask-application
 
 Blueprints Tutorial: https://realpython.com/flask-blueprint/
+
+Frozen Flask: https://pythonhosted.org/Frozen-Flask/
