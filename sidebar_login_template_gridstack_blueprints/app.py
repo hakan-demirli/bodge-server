@@ -11,7 +11,7 @@ class MyFlaskServer():
     blueprints_path = root_path / "blueprints"
     user_data_file_path = root_path / 'my_data.json'
     user_data_json = {}
-    bps = {}
+    plugins = []
     app = Flask(__name__)
 
     def __init__(self):
@@ -25,9 +25,8 @@ class MyFlaskServer():
     def __initUserData(self):
         if(not isfile(self.user_data_file_path)):
             self.user_data_json = {"sidebar": {"order":[]}, "navbar": {}, "settings":{}}
-            for key,val in self.bps.items():
-                self.user_data_json["sidebar"]["order"].append({"name":(val.name)})
-                self.user_data_json["sidebar"]["order"].append({"url":(val.url_prefix)})
+            for val in self.plugins:
+                self.user_data_json["sidebar"]["order"].append({"name":(val.bp.name),"url":(val.bp.url_prefix)})
             with open(self.user_data_file_path, 'w') as outfile:
                 json.dump(self.user_data_json, outfile, indent=4)
 
@@ -35,56 +34,23 @@ class MyFlaskServer():
         for index, path in enumerate(self.blueprints_path.rglob('bp.py')):
             bp_module_name = str(path.relative_to(self.root_path).with_suffix('')).replace('\\','.')
             bp_module = import_module(bp_module_name)
-            bp_bp = bp_module.bp
-            self.app.register_blueprint(bp_bp)
-            self.bps[bp_module_name] = bp_bp
+            tmp = bp_module.MyPlugin(queue.Queue(),queue.Queue())
+            self.app.register_blueprint(tmp.bp)
+            self.plugins.append(tmp)
 
-    @app.route('/sidebar')
-    @login_required
-    def sidebar_route(self):
+    def dashboard_backend(self):
         req = request.get_json()
+        jsn_res = {}
         match req['command']:
             case 'READ':
-                return make_response(jsonify(self.user_data_json['sidebar']), 200)
-            case 'WRITE':
-                self.user_data_json['sidebar'] = req['sidebar']
                 with open(self.user_data_file_path) as json_file:
-                    json.dump(self.user_data_json, json_file, indent=4)
-                return make_response(jsonify({}), 200)
-            case _:
-                return make_response(jsonify({}), 404)
-
-    @app.route('/navbar')
-    @login_required
-    def navbar_route(self):
-        req = request.get_json()
-        match req['command']:
-            case 'READ':
-                return make_response(jsonify(self.user_data_json['navbar']), 200)
+                    jsn_res = json.load(json_file)
             case 'WRITE':
-                self.user_data_json['navbar'] = req['navbar']
-                with open(self.user_data_file_path) as json_file:
-                    json.dump(self.user_data_json, json_file, indent=4)
-                return make_response(jsonify({}), 200)
-            case _:
-                return make_response(jsonify({}), 404)
-
-    @app.route('/settings')
-    @login_required
-    def settings_route(self):
-        req = request.get_json()
-        match req['command']:
-            case 'READ':
-                return make_response(jsonify(self.user_data_json['settings']), 200)
-            case 'WRITE':
-                self.user_data_json['settings'] = req['settings']
-                with open(self.user_data_file_path) as json_file:
-                    json.dump(self.user_data_json, json_file, indent=4)
-                return make_response(jsonify({}), 200)
-            case _:
-                return make_response(jsonify({}), 404)
-
+                with open(self.user_data_file_path, 'w') as outfile:
+                    json.dump(req, outfile, indent=4)
+        return make_response(jsonify(jsn_res), 200)
 
 if __name__ == "__main__":
     mfs = MyFlaskServer()
-    mfs.app.run(host='0.0.0.0')
+    mfs.app.add_url_rule('/backend', 'backend', mfs.dashboard_backend, methods=["POST"])
+    mfs.app.run(host='0.0.0.0',debug=True)
