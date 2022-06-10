@@ -1,7 +1,7 @@
 #TODO
-* [ ] Use a premade admin template
-    * [ ] Use this: https://github.com/adminkit/adminkit
-    * [ ] Use adminlte sidebar and navbar
+* [x] Fix dynamic sidebar
+* [x] Use a premade admin template
+    * [x] Use adminlte sidebar and navbar
 * [x] Use blueprints for all pages
 * [ ] Use iframe for cards
 * [x] use templates for the sidebar and the navbar
