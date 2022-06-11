@@ -1,13 +1,4 @@
 
-
-let wrapper = document.getElementById('wrapper');
-let sidebar_toggle = document.getElementById('menu-toggle');
-sidebar_toggle.onclick=function(){
-    wrapper.classList.toggle('toggled');
-}
-
-
-
 function sidebarReadBackend() {
     let entry = {
         command: 'READ'
@@ -25,14 +16,18 @@ function sidebarReadBackend() {
             return;
         }
         response.json().then(function (data) {
+
             data["sidebar"]["order"].forEach(function(val, idx){
-                let tml = `<li class="nav-item">
-                            <a href="${val['url']}" class="nav-link" aria-current="page">
-                            <i class="${val["icon"]}"></i>
-                            ${val['name']}
-                            </a>
-                        </li>`;
-                document.getElementById('base-sidebar').innerHTML += tml;
+                let tml = ` <li class="nav-item">
+                                <a href="${val['url']}" class="nav-link {% if 'widgets' in segment %}  {% endif %}">
+                                    <i class="nav-icon ${val["icon"]}"></i>
+                                    <p>${val['name']}</p>
+                                </a>
+                            </li>`;
+
+                let a = document.getElementsByClassName('nav-sidebar')[0];
+                a.innerHTML +=tml;
+
             });
         });
     })
