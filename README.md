@@ -3,7 +3,7 @@
 * [x] Use a premade admin template
     * [x] Use adminlte sidebar and navbar
 * [x] Use blueprints for all pages
-* [ ] Use iframe for cards
+* [x] Use iframe for cards
 * [x] use templates for the sidebar and the navbar
 * [x] Add login and logout links to navbar
 * [x] use templates with another page to be sure they are working
@@ -13,7 +13,7 @@
 * [ ] add search for new widgets button
 * [x] Add dynamic sidebar
 * [x] Add todo card
-* [ ] Add clock card
+* [x] Add clock card
 * [ ] Add a kanban webpage
 * [ ] Add a calendar webpage
 * [ ] Add a notepad webpage

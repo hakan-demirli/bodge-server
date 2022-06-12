@@ -2,27 +2,92 @@
 {% block title %} Dashboard {% endblock %}
 
 <!-- Specific Page CSS goes HERE  -->
-{% block stylesheets %}
-<link href="/kanban/static/plugins/tempusdominus/css/tempus-dominus.min.css" rel="stylesheet">
-{% endblock stylesheets %}
+{% block stylesheets %}{% endblock stylesheets %}
 
 {% block content %}
-    <div class="container-fluid">
-        <h1 class="mt-4">Simple Sidebar</h1>
-        <p>The starting state of the menu will appear collapsed on smaller screens, and will appear non-collapsed on
-            larger screens. When toggled using the button below, the menu will change.</p>
-        <p>Make sure to keep all page content within the <code>#page-content-wrapper</code>. The top navbar is
-            optional, and just for demonstration. Just create an element with the <code>#menu-toggle</code> ID which
-            will toggle the menu when clicked.</p>
-    </div>
-    <span id='icon-only' class='log-event' style='display: inline-block'> <i class='fa-solid fa-calendar fa-9x'></i></span>
+  <!-- icon_class="far fa-circle nav-icon" -->
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper kanban">
+    <section class="content pb-3">
+      <div class="container-fluid h-100">
+
+        <div class="card card-row" id="my-projects">
+            <div class="card-header">
+              <h3 class="card-title">Projects</h3>
+            </div>
+            <div class="card-body">
+            </div>
+        </div>
+
+        <div class="card card-row card-primary">
+          <div class="card-header">
+            <h3 class="card-title">To Do</h3>
+            <div class="card-tools">
+              <a href="#" class="btn btn-tool">
+                <i class="fas fa-plus"></i>
+              </a>
+            </div>
+          </div>
+          <div class="card-body connectedSortable">
+          </div>
+        </div>
+
+        <div class="card card-row card-default">
+          <div class="card-header bg-info">
+            <h3 class="card-title">In Progress</h3>
+            <div class="card-tools">
+              <a href="#" class="btn btn-tool">
+                <i class="fas fa-plus"></i>
+              </a>
+            </div>
+          </div>
+          <div class="card-body connectedSortable">
+
+          </div>
+        </div>
+
+        <div class="card card-row card-success">
+          <div class="card-header">
+            <h3 class="card-title">Done</h3>
+            <div class="card-tools">
+              <a href="#" class="btn btn-tool">
+                <i class="fas fa-plus"></i>
+              </a>
+            </div>
+          </div>
+          <div class="card-body connectedSortable">
+            <div class="card card-light card-outline">
+              <div class="card-header card-header-drag">
+                <h5 class="card-title">
+                  <textarea class="form-control" rows="1" placeholder="Enter a title"></textarea>
+                </h5>
+                <div class="card-tools">
+                  <a href="#" class="btn btn-tool btn-link">#2</a>
+                  <a href="#" class="btn btn-tool">
+                    <i class="fas fa-pen"></i>
+                  </a>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="form-group">
+                  <textarea class="form-control" rows="3" placeholder="Enter a note"></textarea>
+                  <button type="submit" class="btn btn-primary w-50">Add</button>
+                  <button type="submit" class="btn btn-secondary float-right w-50">Cancel</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+
+
 {% endblock content %}
 
 <!-- Specific Page JS goes HERE  -->
 {% block javascripts %}
-<script src="/kanban/static/plugins/popper/popper.min.js"></script>
-<script src="/kanban/static/plugins/tempusdominus/js/tempus-dominus.min.js"></script>
-<script>
-    new tempusDominus.TempusDominus(document.getElementById('icon-only'));
-</script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
 {% endblock javascripts %}
