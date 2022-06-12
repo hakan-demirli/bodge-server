@@ -1,0 +1,64 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    {% include 'css_dep.html' %}
+    <link href="/kanban/static/plugins/tempusdominus/css/tempus-dominus.min.css" rel="stylesheet">
+</head>
+<body>
+<!-- TO DO List -->
+<div class="card dark-mode">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="ion ion-clock mr-1"></i>
+            Simple Clock
+        </h3>
+        <!-- tools card -->
+        <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                <i class="fas fa-minus"></i>
+            </button>
+            <button type="button" class="btn btn-tool" data-card-widget="remove">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <!-- /. tools -->
+    </div>
+    <!-- /.card-header -->
+    <div class="card-body">
+        <h1 class="digital-clock"  style="text-align: center;">00:00:00</h1>
+        <ul class="todo-list" id="clock-list">
+        </ul>
+    </div>
+    <div class="card-footer clearfix">
+        <!-- Date and time range -->
+        <div class="form-group">
+            <input type="text" placeholder="Type name ..." class="form-control" id="clock-add-name">
+                <div class='input-group' id='datetimepicker1' data-td-target-input='nearest' data-td-target-toggle='nearest'>
+                    <input id='clock-add-time' type='text' class='form-control datetimepicker-input' data-td-target='#datetimepicker1'/>
+                    <span class='input-group-text' data-td-target='#datetimepicker1' data-td-toggle='datetimepicker'>
+                        <span class='fa-solid fa-calendar'></span>
+                    </span>
+                    <button type="button" class="btn btn-secondary input-group-append" id="clock-add-button">Add alarm</button>
+                </div>
+
+        </div>
+        <!-- /.form group -->
+    </div>
+</div>
+
+{% include 'js_dep.html' %}
+<script src="/clock/static/js/clock.js"></script>
+<script src="/kanban/static/plugins/popper/popper.min.js"></script>
+<script src="/kanban/static/plugins/tempusdominus/js/tempus-dominus.min.js"></script>
+<script>
+    new tempusDominus.TempusDominus(document.getElementById('datetimepicker1'));
+</script>
+</body>
+</html>
+

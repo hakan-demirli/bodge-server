@@ -10,9 +10,10 @@
 * [x] add dark mode
 * [x] add templated gridstack as a route/serve
     * [ ] implement serialization backend
-        * [ ] id based dictionary. Give id to all widgets
-    * [ ] add all old cards
-* [ ] Add dynamic sidebar
+* [ ] add search for new widgets button
+* [x] Add dynamic sidebar
+* [x] Add todo card
+* [ ] Add clock card
 * [ ] Add a kanban webpage
 * [ ] Add a calendar webpage
 * [ ] Add a notepad webpage

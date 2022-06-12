@@ -20,20 +20,20 @@ class MyFlaskServer():
         self.app.config['SIMPLELOGIN_PASSWORD'] = 'norris'
         SimpleLogin(self.app)
         self.__registerAllBlueprints()
-        self.__initUserData()
+        if(not isfile(self.user_data_file_path)):
+            self.__initUserData()
         self.app.add_url_rule('/backend', 'backend', self.__baseBackend, methods=["POST"])
         self.app.add_url_rule('/', 'root', self.__rootRoute, methods=["GET"])
 
     def __initUserData(self):
-        if(not isfile(self.user_data_file_path)):
-            self.user_data_json = {"sidebar": [], "navbar": {}, "settings":{}, "cards":[]}
-            for val in self.plugins:
-                if val.page:
-                    self.user_data_json["sidebar"].append({"name":(val.bp.name),"url":(val.bp.url_prefix),"icon":val.icon})
-                if val.card:
-                    self.user_data_json["cards"].append({"name":(val.bp.name),"url":(val.bp.url_prefix+'/card'),"icon":val.icon})
-            with open(self.user_data_file_path, 'w') as outfile:
-                json.dump(self.user_data_json, outfile, indent=4)
+        self.user_data_json = {"sidebar": [], "navbar": {}, "settings":{}, "cards":[]}
+        for val in self.plugins:
+            if val.page:
+                self.user_data_json["sidebar"].append({"name":(val.bp.name),"url":(val.bp.url_prefix),"icon":val.icon})
+            if val.card:
+                self.user_data_json["cards"].append({"name":(val.bp.name),"url":(val.bp.url_prefix+'/card'),"icon":val.icon})
+        with open(self.user_data_file_path, 'w') as outfile:
+            json.dump(self.user_data_json, outfile, indent=4)
 
     def __registerAllBlueprints(self):
         for index, path in enumerate(self.blueprints_path.rglob('bp.py')):
@@ -46,6 +46,8 @@ class MyFlaskServer():
     def __baseBackend(self):
         req = request.get_json()
         jsn_res = {}
+        if(not isfile(self.user_data_file_path)):
+            self.__initUserData()
         match req['command']:
             case 'READ':
                 with open(self.user_data_file_path) as json_file:
