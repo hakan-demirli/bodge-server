@@ -5,25 +5,26 @@ from ..Plugin import Plugin
 import time, json, os
 
 class MyPlugin(Plugin):
-    bp = Blueprint( name='Kanban',
+    bp = Blueprint( name='calendar',
                 import_name=__name__,
-                url_prefix='/kanban',
+                url_prefix='/calendar',
                 template_folder='templates',
                 static_folder='static')
-    user_data_path = Path(__file__).parent / 'kanban.json'
-    icon = 'fa-solid fa-table-columns'
+    user_data_path = Path(__file__).parent / 'calendar.json'
+    icon = 'fa-solid fa-border-all'
     page = 1
     card = 0
+
 
     def __init__(self,all_q,my_q):
         Plugin.__init__(self,all_q,my_q)
         self.__init_user_data()
-        self.bp.route('/')(login_required(self.kanban))
-        self.bp.route('/backend', methods=["POST"])(login_required(self.kanban_backend))
+        self.bp.route('/')(login_required(self.calendar))
+        self.bp.route('/backend')(login_required(self.calendar_backend))
 
     def __init_user_data(self):
         if(not os.path.isfile(self.user_data_path)):
-            dummy_json = {"kanban": []}
+            dummy_json = {"calendar": []}
             with open(self.user_data_path, 'w') as outfile:
                 json.dump(dummy_json, outfile, indent=4)
 
@@ -34,10 +35,10 @@ class MyPlugin(Plugin):
     def queue_task(self,jsn):
         print("queue task from: " + self.__class__.__name__)
 
-    def kanban(self):
-        return render_template('kanban/kanban.html')
+    def calendar(self):
+        return render_template('calendar/calendar.html')
 
-    def kanban_backend(self):
+    def calendar_backend(self):
         req = request.get_json()
         jsn_res = {}
         match req['command']:

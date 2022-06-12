@@ -15,6 +15,8 @@
 * [x] Add todo card
 * [x] Add clock card
 * [ ] Add a kanban webpage
+    * [ ] Use map to store the data hierarchy
+    * [ ] Store and restore the data
 * [ ] Add a calendar webpage
 * [ ] Add a notepad webpage
 * [ ] Add a filebrowser webpage

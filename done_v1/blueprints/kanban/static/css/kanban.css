@@ -4,7 +4,7 @@
     padding: 0;
     width: 100%;
 }
-#my-projects{
+#kanban-projects-card{
     margin-left: 0px !important;
     padding: 0;
     width: 9%;
@@ -16,4 +16,20 @@
 }
 .content-wrapper{
     padding: 0;
+}
+
+.fa-square-xmark {
+    position: absolute;
+    background:  #557582;
+    color: white;
+    top: -10px;
+    right: -6px;
+}
+
+.fa-rectangle-xmark {
+    position: absolute;
+    background:  #557582;
+    color: white;
+    top: -10px;
+    right: -6px;
 }

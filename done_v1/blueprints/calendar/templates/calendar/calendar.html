@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %} Dashboard {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+<link rel="stylesheet" href="/dashboard/static/css/dashboard.css"/>
+<link rel="stylesheet" href="/dashboard/static/plugins/gridstack/gridstack.min.css"/>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="container-fluid">
+  <h1>Serialization demo</h1>
+  <a onClick="loadGrid()" class="btn btn-primary" href="#">Load</a>
+  <a onClick="saveFullGrid()" class="btn btn-primary" href="#">Save Full</a>
+  <a onClick="loadFullGrid()" class="btn btn-primary" href="#">Load Full</a>
+  <a onClick="clearGrid()" class="btn btn-primary" href="#">Clear</a>
+  <br/><br/>
+  <div id="gridCont"><div class="grid-stack"></div></div>
+  <hr/>
+  <textarea id="saved-data" cols="100" rows="20" readonly="readonly"></textarea>
+</div>
+{% endblock content %}
+
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script src="/dashboard/static/js/events.js"></script>
+<script src="/dashboard/static/plugins/gridstack/gridstack-h5.js"></script>
+<script src="/dashboard/static/js/dashboard.js"></script>
+
+{% endblock javascripts %}

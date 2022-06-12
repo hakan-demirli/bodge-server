@@ -13,53 +13,53 @@
     <section class="content pb-3">
       <div class="container-fluid h-100">
 
-        <div class="card card-row" id="my-projects">
+        <div class="card card-row kanban-projects-root" id="kanban-projects-card">
             <div class="card-header">
               <h3 class="card-title">Root</h3>
               <div class="card-tools">
-                <a href="#" class="btn btn-tool">
+                <a href="#" class="btn btn-tool"  id="kanban-projects-root-button">
                   <i class="fas fa-plus"></i>
                 </a>
               </div>
             </div>
-            <div class="card-body">
+            <div class="card-body" id="kanban-projects-body">
             </div>
         </div>
 
-        <div class="card card-row" id="my-projects">
+        <div class="card card-row kanban-projects-branch" id="kanban-projects-card">
             <div class="card-header">
               <h3 class="card-title">Branch</h3>
               <div class="card-tools">
-                <a href="#" class="btn btn-tool">
+                <a href="#" class="btn btn-tool" id="kanban-projects-branch-button">
                   <i class="fas fa-plus"></i>
                 </a>
               </div>
             </div>
-            <div class="card-body">
+            <div class="card-body" id="kanban-projects-body">
             </div>
         </div>
-        <div class="card card-row" id="my-projects">
+        <div class="card card-row kanban-projects-leaf" id="kanban-projects-card">
             <div class="card-header">
-              <h3 class="card-title">Leaves</h3>
+              <h3 class="card-title">Leaf</h3>
               <div class="card-tools">
-                <a href="#" class="btn btn-tool">
+                <a href="#" class="btn btn-tool" id="kanban-projects-leaf-button">
                   <i class="fas fa-plus"></i>
                 </a>
               </div>
             </div>
-            <div class="card-body">
+            <div class="card-body" id="kanban-projects-body">
             </div>
         </div>
         <div class="card card-row card-primary" id="kanban-card">
           <div class="card-header">
             <h3 class="card-title">To Do</h3>
-            <div class="card-tools">
-              <a href="#" class="btn btn-tool">
+            <div class="card-tools" id="kanban-todo-tools">
+              <a href="#" class="btn btn-tool kanban-plus">
                 <i class="fas fa-plus"></i>
               </a>
             </div>
           </div>
-          <div class="card-body connectedSortable">
+          <div class="card-body connectedSortable" id="kanban-body">
           </div>
         </div>
 
@@ -68,7 +68,7 @@
             <h3 class="card-title">In Progress</h3>
 
           </div>
-          <div class="card-body connectedSortable">
+          <div class="card-body connectedSortable" id="kanban-body">
 
           </div>
         </div>
@@ -78,19 +78,8 @@
             <h3 class="card-title">Done</h3>
 
           </div>
-          <div class="card-body connectedSortable">
-            <div class="card card-light card-outline">
-              <div class="card-header card-header-drag">
+          <div class="card-body connectedSortable" id="kanban-body">
 
-              </div>
-              <div class="card-body">
-                <div class="form-group">
-                  <textarea class="form-control" rows="3" placeholder="Enter a note"></textarea>
-                  <button type="submit" class="btn btn-primary w-50">Add</button>
-                  <button type="submit" class="btn btn-secondary float-right w-50">Cancel</button>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
