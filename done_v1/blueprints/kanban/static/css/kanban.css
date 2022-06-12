@@ -1,6 +1,19 @@
+
 .kanban{
     margin-left: 0px !important;
+    padding: 0;
+    width: 100%;
 }
 #my-projects{
-    width: 12%;
+    margin-left: 0px !important;
+    padding: 0;
+    width: 9%;
+    padding: 0;
+}
+
+.content{
+    padding: 0;
+}
+.content-wrapper{
+    padding: 0;
 }

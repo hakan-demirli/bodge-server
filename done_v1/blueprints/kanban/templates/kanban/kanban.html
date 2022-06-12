@@ -2,7 +2,9 @@
 {% block title %} Dashboard {% endblock %}
 
 <!-- Specific Page CSS goes HERE  -->
-{% block stylesheets %}{% endblock stylesheets %}
+{% block stylesheets %}
+<link href="/kanban/static/css/kanban.css" type="text/css" rel="stylesheet" />
+{% endblock stylesheets %}
 
 {% block content %}
   <!-- icon_class="far fa-circle nav-icon" -->
@@ -13,13 +15,42 @@
 
         <div class="card card-row" id="my-projects">
             <div class="card-header">
-              <h3 class="card-title">Projects</h3>
+              <h3 class="card-title">Root</h3>
+              <div class="card-tools">
+                <a href="#" class="btn btn-tool">
+                  <i class="fas fa-plus"></i>
+                </a>
+              </div>
             </div>
             <div class="card-body">
             </div>
         </div>
 
-        <div class="card card-row card-primary">
+        <div class="card card-row" id="my-projects">
+            <div class="card-header">
+              <h3 class="card-title">Branch</h3>
+              <div class="card-tools">
+                <a href="#" class="btn btn-tool">
+                  <i class="fas fa-plus"></i>
+                </a>
+              </div>
+            </div>
+            <div class="card-body">
+            </div>
+        </div>
+        <div class="card card-row" id="my-projects">
+            <div class="card-header">
+              <h3 class="card-title">Leaves</h3>
+              <div class="card-tools">
+                <a href="#" class="btn btn-tool">
+                  <i class="fas fa-plus"></i>
+                </a>
+              </div>
+            </div>
+            <div class="card-body">
+            </div>
+        </div>
+        <div class="card card-row card-primary" id="kanban-card">
           <div class="card-header">
             <h3 class="card-title">To Do</h3>
             <div class="card-tools">
@@ -32,41 +63,25 @@
           </div>
         </div>
 
-        <div class="card card-row card-default">
+        <div class="card card-row card-default" id="kanban-card">
           <div class="card-header bg-info">
             <h3 class="card-title">In Progress</h3>
-            <div class="card-tools">
-              <a href="#" class="btn btn-tool">
-                <i class="fas fa-plus"></i>
-              </a>
-            </div>
+
           </div>
           <div class="card-body connectedSortable">
 
           </div>
         </div>
 
-        <div class="card card-row card-success">
+        <div class="card card-row card-success" id="kanban-card">
           <div class="card-header">
             <h3 class="card-title">Done</h3>
-            <div class="card-tools">
-              <a href="#" class="btn btn-tool">
-                <i class="fas fa-plus"></i>
-              </a>
-            </div>
+
           </div>
           <div class="card-body connectedSortable">
             <div class="card card-light card-outline">
               <div class="card-header card-header-drag">
-                <h5 class="card-title">
-                  <textarea class="form-control" rows="1" placeholder="Enter a title"></textarea>
-                </h5>
-                <div class="card-tools">
-                  <a href="#" class="btn btn-tool btn-link">#2</a>
-                  <a href="#" class="btn btn-tool">
-                    <i class="fas fa-pen"></i>
-                  </a>
-                </div>
+
               </div>
               <div class="card-body">
                 <div class="form-group">
@@ -90,4 +105,5 @@
 {% block javascripts %}
 
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+<script src="/kanban/static/js/kanban.js"></script>
 {% endblock javascripts %}
