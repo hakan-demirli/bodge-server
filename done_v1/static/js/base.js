@@ -17,7 +17,7 @@ function sidebarReadBackend() {
         }
         response.json().then(function (data) {
 
-            data["sidebar"]["order"].forEach(function(val, idx){
+            data["sidebar"].forEach(function(val){
                 let tml = ` <li class="nav-item">
                                 <a href="${val['url']}" class="nav-link {% if 'widgets' in segment %}  {% endif %}">
                                     <i class="nav-icon ${val["icon"]}"></i>
@@ -26,8 +26,9 @@ function sidebarReadBackend() {
                             </li>`;
 
                 let a = document.getElementsByClassName('nav-sidebar')[0];
-                a.innerHTML +=tml;
-
+                if(a){
+                    a.innerHTML +=tml;
+                }
             });
         });
     })

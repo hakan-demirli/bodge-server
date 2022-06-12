@@ -12,6 +12,8 @@ class MyPlugin(Plugin):
                 static_folder='static')
     user_data_path = Path(__file__).parent / 'kanban.json'
     icon = 'fa-solid fa-table-columns'
+    page = 1
+    card = 0
 
     def __init__(self,all_q,my_q):
         Plugin.__init__(self,all_q,my_q)

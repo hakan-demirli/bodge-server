@@ -26,9 +26,12 @@ class MyFlaskServer():
 
     def __initUserData(self):
         if(not isfile(self.user_data_file_path)):
-            self.user_data_json = {"sidebar": {"order":[]}, "navbar": {}, "settings":{}}
+            self.user_data_json = {"sidebar": [], "navbar": {}, "settings":{}, "cards":[]}
             for val in self.plugins:
-                self.user_data_json["sidebar"]["order"].append({"name":(val.bp.name),"url":(val.bp.url_prefix),"icon":val.icon})
+                if val.page:
+                    self.user_data_json["sidebar"].append({"name":(val.bp.name),"url":(val.bp.url_prefix),"icon":val.icon})
+                if val.card:
+                    self.user_data_json["cards"].append({"name":(val.bp.name),"url":(val.bp.url_prefix+'/card'),"icon":val.icon})
             with open(self.user_data_file_path, 'w') as outfile:
                 json.dump(self.user_data_json, outfile, indent=4)
 

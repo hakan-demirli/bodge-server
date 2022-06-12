@@ -10,10 +10,7 @@
   <title>
     AdminLTE Flask - {% block title %}{% endblock %} | AppSeed
   </title>
-  <link rel="stylesheet" href="/static/plugins/adminlte/adminlte.css">
-  <link href="/static/plugins/bootstrap_dark/bootstrap-unlit.css" rel="stylesheet">
-  <link href="/static/plugins/fontawesome/css/all.min.css" rel="stylesheet">
-
+  {% include 'css_dep.html' %}
   {% block stylesheets %}{% endblock stylesheets %}
 
 </head>
@@ -34,11 +31,7 @@
 
 </div>
 <!-- ./wrapper -->
-<script src="/static/plugins/jquery/jquery.min.js"></script>
-<script src="/static/plugins/bootstrap_dark/bootstrap.bundle.min.js"></script>
-<script src="/static/plugins/adminlte/adminlte.js"></script>
-<script src="/static/plugins/adminlte/demo.js"></script>
-<script src="/static/js/base.js"></script>
+{% include 'js_dep.html' %}
 
 <!-- Specific Page JS goes HERE  -->
 {% block javascripts %}{% endblock javascripts %}

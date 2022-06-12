@@ -1,0 +1,39 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    {% include 'css_dep.html' %}
+</head>
+<body>
+
+<!-- TO DO List -->
+<div class="card  dark-mode">
+    <div class="card-body">
+        <ul class="todo-list" data-widget="todo-list" id="todo-list">
+        </ul>
+    </div>
+    <!-- /.card-body -->
+    <div class="card-footer clearfix">
+    <div class="input-group">
+        <input type="text" placeholder="Type TODO ..." class="form-control" id="todo-add-text">
+        <span class="input-group-append">
+            <button type="button" class="btn btn-primary" id="todo-add-button">Add Item</button>
+        </span>
+    </div>
+    </div>
+</div>
+
+
+{% include 'js_dep.html' %}
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+<script src="/todo/static/js/todo.js"></script>
+<!-- Plugin specific script -->
+
+</body>
+</html>
+

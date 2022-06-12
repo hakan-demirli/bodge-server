@@ -5,26 +5,25 @@ from ..Plugin import Plugin
 import time, json, os
 
 class MyPlugin(Plugin):
-    bp = Blueprint( name='Dashboard',
+    bp = Blueprint( name='Todo',
                 import_name=__name__,
-                url_prefix='/dashboard',
+                url_prefix='/todo',
                 template_folder='templates',
                 static_folder='static')
-    user_data_path = Path(__file__).parent / 'dashboard.json'
-    icon = 'fa-solid fa-border-all'
-    page = 1
-    card = 0
-
+    user_data_path = Path(__file__).parent / 'todo.json'
+    icon = 'fa-solid fa-table-columns'
+    page = 0
+    card = 1
 
     def __init__(self,all_q,my_q):
         Plugin.__init__(self,all_q,my_q)
         self.__init_user_data()
-        self.bp.route('/')(login_required(self.dashboard))
-        self.bp.route('/backend')(login_required(self.dashboard_backend))
+        self.bp.route('/card')(login_required(self.todo_card))
+        self.bp.route('/backend')(login_required(self.todo_backend))
 
     def __init_user_data(self):
         if(not os.path.isfile(self.user_data_path)):
-            dummy_json = {"dashboard": []}
+            dummy_json = {"todo": []}
             with open(self.user_data_path, 'w') as outfile:
                 json.dump(dummy_json, outfile, indent=4)
 
@@ -35,10 +34,10 @@ class MyPlugin(Plugin):
     def queue_task(self,jsn):
         print("queue task from: " + self.__class__.__name__)
 
-    def dashboard(self):
-        return render_template('dashboard/dashboard.html')
+    def todo_card(self):
+        return render_template('todo/todo_card.html')
 
-    def dashboard_backend(self):
+    def todo_backend(self):
         req = request.get_json()
         jsn_res = {}
         match req['command']:

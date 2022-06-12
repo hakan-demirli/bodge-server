@@ -3,10 +3,7 @@
 
 <!-- Specific Page CSS goes HERE  -->
 {% block stylesheets %}
-<style type="text/css">
-  .grid-stack { background: #000002; }
-  .grid-stack-item-content { background-color: #222c2a; }
-</style>
+<link rel="stylesheet" href="/dashboard/static/css/dashboard.css"/>
 <link rel="stylesheet" href="/dashboard/static/plugins/gridstack/gridstack.min.css"/>
 {% endblock stylesheets %}
 
@@ -29,90 +26,6 @@
 {% block javascripts %}
 <script src="/dashboard/static/js/events.js"></script>
 <script src="/dashboard/static/plugins/gridstack/gridstack-h5.js"></script>
+<script src="/dashboard/static/js/dashboard.js"></script>
 
-<script type="text/javascript">
-  let grid = GridStack.init({
-    minRow: 1, // don't let it collapse when empty
-    cellHeight: '7rem'
-  });
-
-  grid.on('added removed change', function(e, items) {
-    let str = '';
-    items.forEach(function(item) { str += ' (x,y)=' + item.x + ',' + item.y; });
-    console.log(e.type + ' ' + items.length + ' items:' + str );
-  });
-
-  let serializedData = [
-    {x: 0, y: 0, w: 2, h: 2, id: '0'},
-    {x: 3, y: 1, h: 2, id: '1', content: "<button onclick=\"alert('clicked!')\">Press me</button>"},
-    {x: 4, y: 1, id: '2'},
-    {x: 2, y: 3, w: 3, id: '3'},
-    {x: 1, y: 3, id: '4', content: `<iframe src="/kanban" onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));' style="height:94.5%;width:100%;border:none;overflow:hidden;"></iframe>
-    `}
-  ];
-  serializedData.forEach((n, i) =>
-    n.content = `    <div class="card-header" style="width:100%">
-        <h3 class="card-title">
-            <i class="fas fa-calendar"></i>
-            hi
-        </h3>
-        <div class="card-tools">
-          <button type="button" class="btn btn-primary btn-sm" onClick="grid.removeWidget(this.parentNode.parentNode.parentNode.parentNode);">X</button>        </div>  </div> ${n.content ? n.content : ''}`);
-  let serializedFull;
-
-  // 2.x method - just saving list of widgets with content (default)
-  loadGrid = function() {
-    grid.load(serializedData, true); // update things
-  }
-  $('iframe').css('pointer-events', 'none');
-  // 3.1 full method saving the grid options + children (which is recursive for nested grids)
-  saveFullGrid = function() {
-    serializedFull = grid.save(true, true);
-    serializedData = serializedFull.children;
-    document.querySelector('#saved-data').value = JSON.stringify(serializedFull, null, '  ');
-  }
-
-  // 3.1 full method to reload from scratch - delete the grid and add it back from JSON
-  loadFullGrid = function() {
-    if (!serializedFull) return;
-    grid.destroy(true); // nuke everything
-    grid = GridStack.addGrid(document.querySelector('#gridCont'), serializedFull)
-  }
-
-  clearGrid = function() {
-    grid.removeAll();
-  }
-
-  fetch(`${window.origin}/backend`, {
-        method: "POST",
-        credentials: "include",
-        body: JSON.stringify({command: 'READ'}),
-        cache: "no-cache",
-        headers: new Headers({"content-type": "application/json"})
-    }).then(function (response) {
-        if (response.status !== 200) {
-            console.log(`Looks like there was a problem. Status code: ${response.status}`);
-            return;
-        }
-        response.json().then(function (data) {
-            data["sidebar"]["order"].forEach(function(val, idx){
-                let tml = ` <li class="nav-item">
-                                <a href="${val['url']}" class="nav-link {% if 'widgets' in segment %}  {% endif %}">
-                                    <i class="nav-icon ${val["icon"]}"></i>
-                                    <p>${val['name']}</p>
-                                </a>
-                            </li>`;
-
-                let a = document.getElementsByClassName('nav-sidebar')[0];
-                a.innerHTML +=tml;
-
-            });
-        });
-    })
-    .catch(function (error) {
-        console.log("Fetch error: " + error);
-    });
-
-  loadGrid();
-</script>
 {% endblock javascripts %}
