@@ -69,7 +69,7 @@ $(function () {
             command: 'WRITE'
         };
 
-        fetch(`${window.origin}/index/todo_list_backend`, {
+        fetch(`${window.origin}/todo/backend`, {
             method: "POST",
             credentials: "include",
             body: JSON.stringify(entry),
@@ -95,7 +95,7 @@ $(function () {
             command: 'READ'
         };
 
-        fetch(`${window.origin}/index/todo_list_backend`, {
+        fetch(`${window.origin}/todo/backend`, {
             method: "POST",
             credentials: "include",
             body: JSON.stringify(entry),
