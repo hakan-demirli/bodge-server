@@ -23,7 +23,7 @@ class MyPlugin(Plugin):
 
     def __init_user_data(self):
         if(not os.path.isfile(self.user_data_path)):
-            dummy_json = {"kanban": []}
+            dummy_json = {"selected": {'root': '','branch': '','leaf': ''},"selected_old": {'root': '','branch': '','leaf': ''},"projects": {},"projects_selected": {}}
             with open(self.user_data_path, 'w') as outfile:
                 json.dump(dummy_json, outfile, indent=4)
 

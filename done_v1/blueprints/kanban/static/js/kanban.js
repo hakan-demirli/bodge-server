@@ -34,9 +34,19 @@ $(function () {
         console.log(e.target.closest('#kanban-projects-body'))
     }
     function removeAddedProjectNode(e) {
-        if (confirm('Delete? U sure?')){
-            e.target.closest('.card').remove();
+        let id = $(e.target).parent('.card').children('.card-saved').attr("id");
+        console.log($(e.target).parent('.card').children('.card-saved').attr("id"));
+        if(id == selected['root'] ||id == selected['branch'] ||id == selected['leaf']){
+            alert("you can't delete selected items");
+        }else{
+            if (confirm('Delete? U sure?')){
+                e.target.closest('.card').remove();
+                delete projects[id];
+                delete projects_selected[id];
+            }
         }
+        console.log(projects);
+        console.log(projects_selected);
     }
     var projects = {};
     var projects_selected = {};
@@ -88,6 +98,7 @@ $(function () {
                 }
                 break;
         }
+        kanbanWriteBackend();
     }
 
     $('#kanban-todo-tools').on("click",('.kanban-plus'),{ extra : {row:4,name:'kanban'}},addEditCard);
@@ -140,6 +151,11 @@ $(function () {
                 }
                 $(`.kanban-projects-branch`).children('#kanban-projects-body').html(tmp);
 
+                if( selected['branch'] == '')
+                break;
+                if ($.isEmptyObject(projects[selected['root']]["childs"][selected['branch']]["childs"]))
+                    break;
+
                 tmp = '';
                 for(var key in projects[selected['root']]["childs"][selected['branch']]["childs"]){
                     let txt =  projects[selected['root']]["childs"][selected['branch']]["childs"][key]['txt'];
@@ -152,8 +168,11 @@ $(function () {
                 $(`.kanban-projects-leaf`).children('#kanban-projects-body').html(tmp);
             break;
             case 'branch':
+                if( selected['branch'] == '')
+                    break;
                 if ($.isEmptyObject(projects[selected['root']]["childs"][selected['branch']]["childs"]))
                     break;
+
                 for(var key in projects[selected['root']]["childs"][selected['branch']]["childs"]){
                     let txt =  projects[selected['root']]["childs"][selected['branch']]["childs"][key]['txt'];
                     let ak = `
@@ -170,6 +189,8 @@ $(function () {
     function selectCardFrontend(column_type){
         if (selected_old[column_type] != '')
             $(`.kanban-projects-${column_type}`).children('#kanban-projects-body').children(`.card`).children(`#${selected_old[column_type]}`).toggleClass('bg-info');
+        if( selected['root'] == '')
+            return;
 
         switch(column_type) {
             case 'root':
@@ -271,10 +292,13 @@ function nukeRightColumns(column_type){
     }
 }
 
- function kanbanWriteBackend() {
+function kanbanWriteBackend() {
 
     let entry = {
-        pro: projects,
+        projects: projects,
+        projects_selected: projects_selected,
+        selected: selected,
+        selected_old: selected_old,
         command: 'WRITE'
     };
 
@@ -290,11 +314,60 @@ function nukeRightColumns(column_type){
             return;
         }
         response.json().then(function (data) {
-        console.log(data);
-    });
+            console.log(data);
+        });
     })
     .catch(function (error) {
         console.log("Fetch error: " + error);
     });
 }
+
+
+
+function kanbanReadBackend() {
+
+    let entry = {
+        command: 'READ'
+    };
+
+    fetch(`${window.origin}/kanban/backend`, {
+        method: "POST",
+        credentials: "include",
+        body: JSON.stringify(entry),
+        cache: "no-cache",
+        headers: new Headers({"content-type": "application/json"})
+    }).then(function (response) {
+        if (response.status !== 200) {
+            console.log(`Looks like there was a problem. Status code: ${response.status}`);
+            return;
+        }
+        response.json().then(function (data) {
+            console.log(data);
+            projects =  data['projects'];
+            projects_selected = data['projects_selected'];
+            selected = data['selected'];
+            selected_old = data['selected_old'];
+
+            let tmp = '';
+            for(var key in projects){
+                let txt =  projects[key]['txt'];
+                let ak = `
+                <div class="card">
+                    <div class="card-body card-saved branch" id=${key} style='white-space:pre'>${txt}</div><i class="fa-solid fa-rectangle-xmark"></i>
+                </div>`;
+                tmp = tmp + ak;
+            }
+            $(`.kanban-projects-root`).children('#kanban-projects-body').html(tmp);
+            selectCardFrontend('root');
+            console.log("here")
+            if( selected['root'] != '')
+                recreateRightColumns('root');
+            selectCardFrontend('root');
+        });
+    })
+    .catch(function (error) {
+        console.log("Fetch error: " + error);
+    });
+    }
+    window.onload = kanbanReadBackend();
 })
