@@ -39,6 +39,14 @@ $(function () {
         }
     }
     var projects = {};
+    var projects_selected = {};
+    var selected = {'root': '',
+                    'branch': '',
+                    'leaf': ''};
+    var selected_old = {'root': '',
+                    'branch': '',
+                    'leaf': ''};
+
     function saveCard(e){
         let txt = $(e.target.closest('.form-group')).find('.form-control').val();
         let myguid = guid();
@@ -49,52 +57,39 @@ $(function () {
         </div>`;
         let tmp = $(e.target.closest(`#${e.data.extra.name}-card`)).find(`#${e.data.extra.name}-body`);
 
+
         switch(e.data.extra.type) {
             case 'root':
                 tmp.append(ak);
                 removeCard(e);
-                highlighted_root_guid = myguid;
-                if(highlighted_root)
-                    highlighted_root.toggleClass('bg-info');
-                highlighted_root = tmp.children('.card').children(`#${myguid}`);
-                console.log(projects);
-                highlighted_root.toggleClass('bg-info');
-                projects[highlighted_root_guid] = {txt:txt,childs:{}};
+                projects[myguid] = {txt:txt,childs:{}};
+                selectCardBackend(e.data.extra.type,myguid);
+                recreateRightColumns(e.data.extra.type);
+                selectCardFrontend(e.data.extra.type);
                 break;
             case 'branch':
-                if(!$.isEmptyObject(projects)){
-                    highlighted_branch_guid = myguid;
-                    console.log(projects)
-                    console.log(projects[highlighted_root_guid])
-                    projects[highlighted_root_guid]['childs'][highlighted_branch_guid] = {txt:txt,childs:{}};
+                if(selected['root'] != ''){
                     tmp.append(ak);
                     removeCard(e);
-                    if(highlighted_branch)
-                        highlighted_branch.toggleClass('bg-info');
-                    highlighted_branch = tmp.children('.card').children(`#${myguid}`);
-                    highlighted_branch.toggleClass('bg-info');
-                }else{
-                    alert("Create a root first");
+                    projects[selected['root']]['childs'][myguid] = {txt:txt,childs:{}};
+                    selectCardBackend(e.data.extra.type,myguid);
+                    recreateRightColumns(e.data.extra.type);
+                    selectCardFrontend(e.data.extra.type);
                 }
                 break;
             case 'leaf':
-                if(!$.isEmptyObject(projects)){
-                    highlighted_leaf_guid = myguid;
-                    console.log(projects);
-                    console.log( projects[highlighted_root_guid]['childs'][highlighted_branch_guid]);
-                    projects[highlighted_root_guid]['childs'][highlighted_branch_guid]['childs'] = {txt:txt,childs:{}};
+                if(selected['branch'] != ''){
                     tmp.append(ak);
                     removeCard(e);
-                    if(highlighted_leaf)
-                        highlighted_leaf.toggleClass('bg-info');
-                    highlighted_leaf = tmp.children('.card').children(`#${myguid}`);
-                    highlighted_leaf.toggleClass('bg-info');
-                }else{
-                    alert("Create a root first");
+                    projects[selected['root']]['childs'][selected['branch']]['childs'][myguid] = {txt:txt,childs:{}};
+                    selectCardBackend(e.data.extra.type,myguid);
+                    recreateRightColumns(e.data.extra.type);
+                    selectCardFrontend(e.data.extra.type);
                 }
                 break;
         }
     }
+
     $('#kanban-todo-tools').on("click",('.kanban-plus'),{ extra : {row:4,name:'kanban'}},addEditCard);
     $('#kanban-body').on("click",('#kanban-add-button'),{ extra : {name:'kanban',icon:"fa-solid fa-square-xmark",header:1}},saveCard);
     $('#kanban-body').on("click",('#kanban-cancel-button'),removeCard);
@@ -111,44 +106,142 @@ $(function () {
     $('.kanban-projects-leaf  ').on("click",('#kanban-cancel-button'),removeCard);
     $('.card-body, .fa-rectangle-xmark').on("click",('.fa-rectangle-xmark'),removeAddedProjectNode);
 
-    var highlighted_root = 0;
-    var highlighted_branch = 0;
-    var highlighted_leaf = 0;
-    var highlighted_root_guid = 0;
-    var highlighted_branch_guid = 0;
-    var highlighted_leaf_guid = 0;
 
     $('.card').on("click",('.card-saved'),function(e) {
 
         if($(e.target).hasClass('root')){
-            highlighted_root.toggleClass('bg-info');
-            $(e.target).toggleClass('bg-info');
-            if(highlighted_branch){
-                highlighted_branch.closest('#kanban-projects-body').html("<div>hi</div>");
-                recreate();
-            }
-            highlighted_root = $(e.target);
-            highlighted_root_guid = $(e.target).attr('id');
-            console.log(highlighted_root_guid);
-
-        }
-        if($(e.target).hasClass('leaf')){
-            highlighted_leaf.toggleClass('bg-info');
-            $(e.target).toggleClass('bg-info');
-            highlighted_leaf = $(e.target)
+            let column_type = 'root';
+            selectCardBackend(column_type,$(e.target).attr('id'));
+            recreateRightColumns(column_type);
+            selectCardFrontend(column_type);
         }
         if($(e.target).hasClass('branch')){
-            highlighted_branch.toggleClass('bg-info');
-            $(e.target).toggleClass('bg-info');
-            highlighted_branch = $(e.target)
+            let column_type = 'branch';
+            selectCardBackend(column_type,$(e.target).attr('id'));
+            recreateRightColumns(column_type);
+            selectCardFrontend(column_type);
         }
-        kanbanWriteBackend();
     });
-    function recreate(){
-        let akey = Object.keys(projects)[0];
-        console.log('akey',akey);
-        let adict = projects[akey]['childs'];
-        console.log('adict',adict);}
+
+    function recreateRightColumns(column_type){
+        nukeRightColumns(column_type);
+        let tmp = '';
+        switch(column_type) {
+            case 'root':
+                if ($.isEmptyObject(projects[selected['root']]["childs"]))
+                    break;
+                for(var key in projects[selected['root']]["childs"]){
+                    let txt =  projects[selected['root']]["childs"][key]['txt'];
+                    let ak = `
+                    <div class="card">
+                        <div class="card-body card-saved branch" id=${key} style='white-space:pre'>${txt}</div><i class="fa-solid fa-rectangle-xmark"></i>
+                    </div>`;
+                    tmp = tmp + ak;
+                }
+                $(`.kanban-projects-branch`).children('#kanban-projects-body').html(tmp);
+
+                tmp = '';
+                for(var key in projects[selected['root']]["childs"][selected['branch']]["childs"]){
+                    let txt =  projects[selected['root']]["childs"][selected['branch']]["childs"][key]['txt'];
+                    let ak = `
+                    <div class="card">
+                        <div class="card-body card-saved leaf" id=${key} style='white-space:pre'>${txt}</div><i class="fa-solid fa-rectangle-xmark"></i>
+                    </div>`;
+                    tmp = tmp + ak;
+                }
+                $(`.kanban-projects-leaf`).children('#kanban-projects-body').html(tmp);
+            break;
+            case 'branch':
+                if ($.isEmptyObject(projects[selected['root']]["childs"][selected['branch']]["childs"]))
+                    break;
+                for(var key in projects[selected['root']]["childs"][selected['branch']]["childs"]){
+                    let txt =  projects[selected['root']]["childs"][selected['branch']]["childs"][key]['txt'];
+                    let ak = `
+                    <div class="card">
+                        <div class="card-body card-saved leaf" id=${key} style='white-space:pre'>${txt}</div><i class="fa-solid fa-rectangle-xmark"></i>
+                    </div>`;
+                    tmp = tmp + ak;
+                }
+                $(`.kanban-projects-leaf`).children('#kanban-projects-body').html(tmp);
+            break;
+        }
+    }
+
+    function selectCardFrontend(column_type){
+        if (selected_old[column_type] != '')
+            $(`.kanban-projects-${column_type}`).children('#kanban-projects-body').children(`.card`).children(`#${selected_old[column_type]}`).toggleClass('bg-info');
+
+        switch(column_type) {
+            case 'root':
+                if($(`.kanban-projects-root`).children('#kanban-projects-body').children(`.card`).children(`#${projects_selected[selected['root']][0]}`).hasClass('bg-info')){
+                    console.log("nope")
+                }else{
+                    $(`.kanban-projects-root`).children('#kanban-projects-body').children(`.card`).children(`#${projects_selected[selected['root']][0]}`).toggleClass('bg-info')
+                }
+                if (projects_selected[selected['root']][1] != '')
+                    $(`.kanban-projects-branch`).children('#kanban-projects-body').children(`.card`).children(`#${projects_selected[selected['root']][1]}`).toggleClass('bg-info');
+                if (projects_selected[selected['root']][2] != '')
+                    $(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${projects_selected[selected['root']][2]}`).toggleClass('bg-info');
+
+            break;
+            case 'branch':
+                if($(`.kanban-projects-branch`).children('#kanban-projects-body').children(`.card`).children(`#${projects_selected[selected['root']][1]}`).hasClass('bg-info')){
+                    console.log("nope")
+                }else{
+                    $(`.kanban-projects-branch`).children('#kanban-projects-body').children(`.card`).children(`#${projects_selected[selected['root']][1]}`).toggleClass('bg-info')
+                }
+                if (projects_selected[selected['root']][2] != '')
+                    $(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${projects_selected[selected['root']][2]}`).toggleClass('bg-info');
+            break;
+            case 'leaf':
+                if($(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${projects_selected[selected['root']][2]}`).hasClass('bg-info')){
+                    console.log("nope")
+                }else{
+                    $(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${projects_selected[selected['root']][2]}`).toggleClass('bg-info')
+                }
+            break;
+        }
+    }
+
+    function selectCardBackend(column_type,id){
+        switch(column_type) {
+            case 'root':
+                selected_old['root'] = selected['root'];
+                selected_old['branch'] = '';
+                selected_old['leaf'] = '';
+                selected[column_type] = id;
+
+                if ((selected['root'] in projects_selected) && (selected['root'] != '')){
+                    selectCardBackend('branch',projects_selected[selected['root']][1]);
+                }else{
+                    projects_selected[selected['root']] = Array(3).fill('');
+                    projects_selected[selected['root']][0] = selected['root'];
+                }
+            break;
+            case 'branch':
+                selected_old['branch'] =  selected['branch'];
+                selected_old['leaf'] = '';
+                selected[column_type] = id;
+                if ((projects_selected[selected['root']][1] in projects_selected) && (selected['root'][1] != '')){
+                    selectCardBackend('leaf',projects_selected[selected['root']][2]);
+                }else{
+                    projects_selected[selected['root']][1] = selected['branch'];
+                }
+            break;
+            case 'leaf':
+                selected_old['leaf'] = selected['leaf'];
+                selected[column_type] = id;
+                if ((projects_selected[selected['root']][2] in projects_selected) && (selected['root'][2] != '')){
+
+                }else{
+                    projects_selected[selected['root']][2] = selected['leaf'];
+                }
+            break;
+        }
+        console.log('projects_selected',projects_selected);
+        console.log('selected',selected);
+    }
+
     /**
 * Generates a GUID string.
 * @returns {string} The generated GUID.
@@ -164,8 +257,19 @@ function guid() {
     return _p8() + _p8(true) + _p8(true) + _p8();
  }
 
-
-
+function nukeRightColumns(column_type){
+    switch(column_type) {
+        case 'root':
+            $(`.kanban-projects-leaf`).children('#kanban-projects-body').html('');
+            $(`.kanban-projects-branch`).children('#kanban-projects-body').html('');
+        break;
+        case 'branch':
+            $(`.kanban-projects-leaf`).children('#kanban-projects-body').html('');
+        break;
+        case 'leaf':
+        break;
+    }
+}
 
  function kanbanWriteBackend() {
 
