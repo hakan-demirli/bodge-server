@@ -20,12 +20,12 @@ class KanbanDataClass{
                 break;
             case 'branch':
                 this.projects[selected['root']]['childs'][id] = {parent:selected['root'], txt:txt,childs:{}};
-                this.projects_accesable[type][id] = {parent:selected['root'], txt:txt,childs:{}};
+                this.projects_accesable[type][id] = this.projects[selected['root']]['childs'][id];
                 break;
             case 'leaf':
                 this.projects[selected['root']]['childs'][selected['branch']]['childs'][id] = {parents:{branch:selected['branch'],root:selected['root']},txt:txt,childs:{todo:{},prog:{},done:{}}};
                 this.projects_accesable['branch'][selected['branch']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'];
-                this.projects_accesable[type][id] = {parents:{branch:selected['branch'],root:selected['root']},txt:txt,childs:{todo:{},prog:{},done:{}}};
+                this.projects_accesable[type][id] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][id];
                 break;
             case 'todo':
             case 'prog':
@@ -33,7 +33,7 @@ class KanbanDataClass{
                 this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id] = {parents:{branch:selected['branch'],root:selected['root'],leaf:selected['leaf']},txt:txt};
                 this.projects_accesable['branch'][selected['branch']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'];
                 this.projects_accesable['leaf'][selected['leaf']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'];
-                this.projects_accesable[type][id] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id]
+                this.projects_accesable[type][id] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id];
                 break;
         }
         kanbanWriteBackend();
@@ -43,7 +43,7 @@ class KanbanDataClass{
             case 'root':
                 for(let branch_id in this.projects[id]['childs']){ //for every branch
                     for(let leaf_id in this.projects[id]['childs'][branch_id]['childs']){ // for every leaf
-                        for(let tpd in ['todo','prog','done']){ // for every todo,prog,done
+                        for(let tpd in {'todo':'','prog':'','done':''}){ // for every todo,prog,done
                             for(let entity in this.projects[id]['childs'][branch_id]['childs'][leaf_id]['childs'][tpd]){ // for every todo,prog,done
                                 delete this.projects_accesable[tpd][entity];
                             }
@@ -60,7 +60,7 @@ class KanbanDataClass{
                 console.log(id);
                 console.log(prootid);
                 for(let leaf_id in this.projects[prootid]['childs'][id]['childs']){ // for every leaf
-                    for(let tpd in ['todo','prog','done']){ // for every todo,prog,done
+                    for(let tpd in {'todo':'','prog':'','done':''}){ // for every todo,prog,done
                         for(let entity in this.projects[prootid]['childs'][id]['childs'][leaf_id]['childs'][tpd]){ // for every todo,prog,done
                             delete this.projects_accesable[tpd][entity];
                         }
@@ -73,7 +73,7 @@ class KanbanDataClass{
             case 'leaf':
                 let psrootid = this.projects_accesable[type][id]['parents']['root'];
                 let psbranchid = this.projects_accesable[type][id]['parents']['branch'];
-                for(let tpd in ['todo','prog','done']){ // for every todo,prog,done
+                for(let tpd in {'todo':'','prog':'','done':''}){ // for every todo,prog,done
                     for(let entity in this.projects[psrootid]['childs'][psbranchid]['childs'][id]['childs'][tpd]){ // for every todo,prog,done
                         delete this.projects_accesable[tpd][entity];
                     }
@@ -144,17 +144,17 @@ class KanbanDataClass{
             if (confirm('Delete? U sure?')){
                 e.target.closest('.card').remove();
                 if(column_type_root){
-                    kanban_data.remove(id,'root');
                     delete projects_selected[id];
+                    kanban_data.remove(id,'root');
                 }
                 if(column_type_branch){
-                    kanban_data.remove(id,'branch');
                     projects_selected[kanban_data.projects_accesable['branch'][id]['parent']][1] = '';
                     projects_selected[kanban_data.projects_accesable['branch'][id]['parent']][2] = '';
+                    kanban_data.remove(id,'branch');
                 }
                 if(column_type_leaf){
+                    projects_selected[kanban_data.projects_accesable['leaf'][id]['parents']['root']][2] = '';
                     kanban_data.remove(id,'leaf');
-                    projects_selected[kanban_data.projects_accesable['leaf'][id]['parent']][2] = '';
                 }
                 kanbanWriteBackend();
             }
@@ -249,7 +249,7 @@ class KanbanDataClass{
                     $.isEmptyObject(kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"][selected['leaf']]["childs"]['done']))
                     break;
                 tmp = '';
-                for(let tpd in kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs']){
+                for(let tpd in {'todo':'','prog':'','done':''}){
                     for(let key in  kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][tpd]){
                         let txt = kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][tpd][key]['txt'];
                         let ak = `<div class="card">
@@ -259,6 +259,7 @@ class KanbanDataClass{
                         tmp = tmp + ak;
                     }
                     $(`#kanban-${tpd}-card`).children(`#kanban-${tpd}-body`).html(tmp);
+                    tmp = '';
                 }
         }
     }
