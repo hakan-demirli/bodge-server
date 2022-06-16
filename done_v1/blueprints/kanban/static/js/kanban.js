@@ -35,9 +35,18 @@ class KanbanDataClass{
     remove(id,type){
         switch(type) {
             case 'root':
+                for(let branch_id in this.projects[id]['childs']){ //for every branch
+                    for(let leaf_id in this.projects[id]['childs'][branch_id]['childs']){ // for every leaf
+                        delete this.projects_accesable['leaf'][leaf_id];
+                    }
+                    delete this.projects_accesable['branch'][branch_id];
+                }
                 delete this.projects[id];
                 break;
             case 'branch':
+                for(let leaf_id in this.projects[this.projects_accesable[type][id]['parent']]['childs'][id]['childs']){ // for every leaf
+                    delete this.projects_accesable['leaf'][leaf_id];
+                }
                 delete this.projects[this.projects_accesable[type][id]['parent']]['childs'][id];
                 delete this.projects_accesable[type][id];
                 break;
@@ -83,9 +92,11 @@ class KanbanDataClass{
                 e.target.closest('.card').remove();
                 if(column_type_root){
                     kanban_data.remove(id,'root');
+                    delete projects_selected[id];
                 }
                 if(column_type_branch){
                     kanban_data.remove(id,'branch');
+                    projects_accesable
                 }
                 if(column_type_leaf){
                     kanban_data.remove(id,'leaf');
