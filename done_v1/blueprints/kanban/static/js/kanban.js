@@ -484,10 +484,10 @@ class KanbanDataClass{
             let body_name = e.target.id;
             console.log(body_name);
             console.log(card_id);
-            console.log(dropped_card);
+            console.log(dropped_card.text());
             switch(body_name){
                 case 'kanban-todo-body':
-                    kanban_data.add(card_id,'todo');
+                    kanban_data.add(card_id,'todo',dropped_card.text());
                     if(dropped_card.hasClass("prog")){
                         kanban_data.remove(card_id,'prog');
                         dropped_card.toggleClass('prog');
@@ -500,7 +500,7 @@ class KanbanDataClass{
                     }
                 break;
                 case 'kanban-prog-body':
-                    kanban_data.add(card_id,'prog');
+                    kanban_data.add(card_id,'prog',dropped_card.text());
                     if(dropped_card.hasClass("done")){
                         kanban_data.remove(card_id,'done');
                         dropped_card.toggleClass('done');
@@ -513,7 +513,7 @@ class KanbanDataClass{
                     }
                 break;
                 case 'kanban-done-body':
-                    kanban_data.add(card_id,'done');
+                    kanban_data.add(card_id,'done',dropped_card.text());
                     if(dropped_card.hasClass("prog")){
                         kanban_data.remove(card_id,'prog');
                         dropped_card.toggleClass('prog');
