@@ -2,6 +2,12 @@
 $(function () {
 'use strict'
 
+var fuckcss = `<div class="form-group" style="  visibility: hidden; width: 9%;">
+                <textarea class="form-control" rows="1" placeholder="Enter a note"></textarea>
+                <button type="submit" class="btn btn-primary w-50" id="kanban-add-button"><i class="fa-solid fa-check"></i></button>
+                <button type="submit" class="btn btn-secondary float-right w-50" id="kanban-cancel-button"><i class="fas fa-times"></i></button>
+               </div>`;
+
 class KanbanDataClass{
     constructor(proj,proj_ac) {
         this.projects = proj;
@@ -22,7 +28,7 @@ class KanbanDataClass{
             case 'leaf':
                 this. projects[selected['root']]['childs'][selected['branch']]['childs'][id] = {txt:txt,childs:{}};
                 this.projects_accesable['branch'][selected['branch']]['childs'][id] = {parents:{branch:selected['branch'],root:selected['root']},txt:txt,childs:{}};
-                this.projects_accesable[type][id] = {parents:{branch:selected['branch'],root:selected['root']},txt:txt,childs:{}};
+                this.projects_accesable[type][id] = {parents:{branch:selected['branch'],root:selected['root']},txt:txt,childs:{todo:{},prog:{},done:{}}};
                 break;
         }
     }
@@ -44,21 +50,27 @@ class KanbanDataClass{
 }
 
     function addEditCard(e){
+        console.log("here adding the edit card");
         let ak = `
         <div class="form-group">
-            <textarea class="form-control" rows="${e.data.extra.row}" placeholder="Enter a note"></textarea>
+            <textarea class="form-control" rows="${e.data.extra.row}" placeholder="..."></textarea>
             <button type="submit" class="btn btn-primary w-50" id="kanban-add-button"><i class="fa-solid fa-check"></i></button>
             <button type="submit" class="btn btn-secondary float-right w-50" id="kanban-cancel-button"><i class="fas fa-times"></i></button>
         </div>`;
-        $(e.target.closest(`#${e.data.extra.name}-card`)).find(`#${e.data.extra.name}-body`).append(ak);
+        console.log(`#${e.data.extra.name}-card`);
+        console.log($(e.target.closest(`#${e.data.extra.name}-card`)));
+        console.log($(e.target.closest(`#${e.data.extra.name}-card`)).find(`#${e.data.extra.name}-body`));
+        $(e.target.closest(`#${e.data.extra.name}-card`)).find(`#${e.data.extra.name}-body`).prepend(ak);
     }
 
     function removeCard(e) {
         e.target.closest('.form-group').remove();
     }
+
     function removeAddedCard(e) {
         e.target.closest('.card').remove();
     }
+
     function removeAddedProjectNode(e) {
         let id = $(e.target).parent('.card').children('.card-saved').attr("id");
         let column_type_root = $(e.target).parent('.card').children('.card-saved').hasClass('root');
@@ -82,6 +94,7 @@ class KanbanDataClass{
             }
         }
     }
+
     var projects_selected = {};
     var selected = {'root': '',
                     'branch': '',
@@ -99,37 +112,12 @@ class KanbanDataClass{
             <div class="card-body card-saved ${e.data.extra.type}" id=${myguid} style='white-space:pre'>${txt}</div><i class="${e.data.extra.icon}"></i>
         </div>`;
         let tmp = $(e.target.closest(`#${e.data.extra.name}-card`)).find(`#${e.data.extra.name}-body`);
-
-        switch(e.data.extra.type) {
-            case 'root':
-                tmp.append(ak);
-                removeCard(e);
-                kanban_data.add(myguid,'root',txt);
-                selectCardBackend(e.data.extra.type,myguid);
-                recreateRightColumns(e.data.extra.type);
-                selectCardFrontend(e.data.extra.type);
-                break;
-            case 'branch':
-                if(selected['root'] != ''){
-                    tmp.append(ak);
-                    removeCard(e);
-                    kanban_data.add(myguid,'branch',txt);
-                    selectCardBackend(e.data.extra.type,myguid);
-                    recreateRightColumns(e.data.extra.type);
-                    selectCardFrontend(e.data.extra.type);
-                }
-                break;
-            case 'leaf':
-                if(selected['branch'] != ''){
-                    tmp.append(ak);
-                    removeCard(e);
-                    kanban_data.add(myguid,'leaf',txt);
-                    selectCardBackend(e.data.extra.type,myguid);
-                    recreateRightColumns(e.data.extra.type);
-                    selectCardFrontend(e.data.extra.type);
-                }
-                break;
-        }
+        tmp.prepend(ak);
+        removeCard(e);
+        kanban_data.add(myguid,e.data.extra.type,txt);
+        selectCardBackend(e.data.extra.type,myguid);
+        recreateRightColumns(e.data.extra.type);
+        selectCardFrontend(e.data.extra.type);
         kanbanWriteBackend();
     }
 
@@ -148,6 +136,7 @@ class KanbanDataClass{
                     </div>`;
                     tmp = tmp + ak;
                 }
+                tmp = tmp + fuckcss;
                 $(`.kanban-projects-branch`).children('#kanban-projects-body').html(tmp);
 
                 if( selected['branch'] == '')
@@ -164,6 +153,7 @@ class KanbanDataClass{
                     </div>`;
                     tmp = tmp + ak;
                 }
+                tmp = tmp + fuckcss;
                 $(`.kanban-projects-leaf`).children('#kanban-projects-body').html(tmp);
             break;
             case 'branch':
@@ -180,6 +170,7 @@ class KanbanDataClass{
                     </div>`;
                     tmp = tmp + ak;
                 }
+                tmp = tmp + fuckcss;
                 $(`.kanban-projects-leaf`).children('#kanban-projects-body').html(tmp);
             break;
         }
@@ -278,11 +269,11 @@ class KanbanDataClass{
     function nukeRightColumns(column_type){
         switch(column_type) {
             case 'root':
-                $(`.kanban-projects-leaf`).children('#kanban-projects-body').html('');
-                $(`.kanban-projects-branch`).children('#kanban-projects-body').html('');
+                $(`.kanban-projects-leaf`).children('#kanban-projects-body').html(fuckcss);
+                $(`.kanban-projects-branch`).children('#kanban-projects-body').html(fuckcss);
             break;
             case 'branch':
-                $(`.kanban-projects-leaf`).children('#kanban-projects-body').html('');
+                $(`.kanban-projects-leaf`).children('#kanban-projects-body').html(fuckcss);
             break;
             case 'leaf':
             break;
@@ -356,6 +347,7 @@ class KanbanDataClass{
                     </div>`;
                     tmp = tmp + ak;
                 }
+                tmp = tmp + fuckcss;
                 $(`.kanban-projects-root`).children('#kanban-projects-body').html(tmp);
                 selectCardFrontend('root');
                 console.log("here")
@@ -385,10 +377,9 @@ class KanbanDataClass{
 
     var kanban_data = new KanbanDataClass({}, {root:{},branch:{},leaf:{}});
 
-
-    $('#kanban-todo-tools').on("click",('.kanban-plus'),{ extra : {row:4,name:'kanban'}},addEditCard);
-    $('#kanban-body').on("click",('#kanban-add-button'),{ extra : {name:'kanban',icon:"fa-solid fa-square-xmark",header:1}},saveCard);
-    $('#kanban-body').on("click",('#kanban-cancel-button'),removeCard);
+    $('#kanban-todo-card').children('.card-header').children('.card-tools').on("click",('.kanban-plus'),{ extra : {row:4,name:'kanban-todo'}},addEditCard);
+    $('#kanban-todo-body').on("click",('#kanban-add-button'),{ extra : {name:'kanban-todo',icon:"fa-solid fa-square-xmark",header:1}},saveCard);
+    $('#kanban-todo-body').on("click",('#kanban-cancel-button'),removeCard);
     $('.card-body, .fa-square-xmark').on("click",('.fa-square-xmark'),removeAddedCard);
 
     $('#kanban-projects-card,#kanban-projects-root-button  ').on("click",('#kanban-projects-root-button  '),{ extra : {row:1,name:'kanban-projects'}},addEditCard);
@@ -404,19 +395,19 @@ class KanbanDataClass{
 
 
     $('.card').on("click",('.card-saved'),function(e) {
-
+        let column_type;
         if($(e.target).hasClass('root')){
-            let column_type = 'root';
-            selectCardBackend(column_type,$(e.target).attr('id'));
-            recreateRightColumns(column_type);
-            selectCardFrontend(column_type);
+            column_type = 'root';
         }
         if($(e.target).hasClass('branch')){
-            let column_type = 'branch';
-            selectCardBackend(column_type,$(e.target).attr('id'));
-            recreateRightColumns(column_type);
-            selectCardFrontend(column_type);
+            column_type = 'branch';
         }
+        if($(e.target).hasClass('leaf')){
+            column_type = 'leaf';
+        }
+        selectCardBackend(column_type,$(e.target).attr('id'));
+        recreateRightColumns(column_type);
+        selectCardFrontend(column_type);
     });
 
 })

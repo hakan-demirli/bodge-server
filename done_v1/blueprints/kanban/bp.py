@@ -19,6 +19,7 @@ class MyPlugin(Plugin):
         Plugin.__init__(self,all_q,my_q)
         self.__init_user_data()
         self.bp.route('/')(login_required(self.kanban))
+        self.bp.route('/menu')(login_required(self.kanban_menu))
         self.bp.route('/backend', methods=["POST"])(login_required(self.kanban_backend))
 
     def __init_user_data(self):
@@ -40,6 +41,9 @@ class MyPlugin(Plugin):
 
     def kanban(self):
         return render_template('kanban/kanban.html')
+
+    def kanban_menu(self):
+        return render_template('kanban/kanban_menu.html')
 
     def kanban_backend(self):
         req = request.get_json()
