@@ -31,7 +31,7 @@ class KanbanDataClass{
             case 'prog':
             case 'done':
                 this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id] = {parents:{branch:selected['branch'],root:selected['root'],leaf:selected['leaf']},txt:txt};
-                this.projects_accesable['branch'][selected['branch']] = this.projects[selected['root']]['childs'][selected['branch']]['childs'];
+                this.projects_accesable['branch'][selected['branch']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'];
                 this.projects_accesable['leaf'][selected['leaf']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'];
                 this.projects_accesable[type][id] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id]
                 break;
@@ -55,6 +55,9 @@ class KanbanDataClass{
                 break;
             case 'branch':
                 let prootid = this.projects_accesable[type][id]['parent'];
+                console.log(type);
+                console.log(id);
+                console.log(prootid);
                 for(let leaf_id in this.projects[prootid]['childs'][id]['childs']){ // for every leaf
                     for(let tpd in ['todo','prog','done']){ // for every todo,prog,done
                         for(let entity in this.projects[prootid]['childs'][id]['childs'][leaf_id]['childs'][tpd]){ // for every todo,prog,done
@@ -158,6 +161,28 @@ class KanbanDataClass{
             <div class="card-body card-saved ${e.data.extra.type}" id=${myguid} style='white-space:pre'>${txt}</div><i class="${e.data.extra.icon}"></i>
         </div>`;
         let tmp = $(e.target.closest(`#${e.data.extra.name}-card`)).find(`#${e.data.extra.name}-body`);
+        switch(e.data.extra.type) {
+            case 'branch':
+                if(selected['root'] == ''){
+                    toastr.warning(`Can't add without a parent.`)
+                    return;
+                }
+                break;
+            case 'leaf':
+                if(selected['branch'] == ''){
+                    toastr.info(`Can't add without a parent.`)
+                    return;
+                }
+                break;
+            case 'todo':
+            case 'prog':
+            case 'done':
+                if(selected['leaf'] == ''){
+                    toastr.warning(`Can't add without a parent.`)
+                    return;
+                }
+                break;
+        }
         tmp.prepend(ak);
         removeCard(e);
         kanban_data.add(myguid,e.data.extra.type,txt);
@@ -166,7 +191,6 @@ class KanbanDataClass{
         selectCardFrontend(e.data.extra.type);
         kanbanWriteBackend();
     }
-
     function recreateRightColumns(column_type){
         nukeRightColumns(column_type);
         let tmp = '';
@@ -211,14 +235,10 @@ class KanbanDataClass{
                 for(let tpd in kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs']){
                     for(let key in  kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][tpd]){
                         let txt = kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][tpd][key]['txt'];
-                        let ak = `
-                        <div class="card">
-                            <div class="card-body card-saved leaf" id=${key} style='white-space:pre'>${txt}</div><i class="fa-solid fa-rectangle-xmark"></i>
-                        </div>`;
-                        `<div class="card">
-                            <div class="card-header card-header-drag"></div>
-                            <div class="card-body card-saved ${tpd}" id=${key} style='white-space:pre'>${txt}</div><i class="fa-solid fa-square-xmark"></i>
-                        </div>`;
+                        let ak = `<div class="card">
+                                    <div class="card-header card-header-drag"></div>
+                                    <div class="card-body card-saved ${tpd}" id=${key} style='white-space:pre'>${txt}</div><i class="fa-solid fa-square-xmark"></i>
+                                </div>`;
                         tmp = tmp + ak;
                     }
                     $(`#kanban-${tpd}-card`).children(`#kanban-${tpd}-body`).html(tmp);
@@ -271,6 +291,8 @@ class KanbanDataClass{
                 selected_old['branch'] = '';
                 selected_old['leaf'] = '';
                 selected[column_type] = id;
+                selected['branch'] = '';
+                selected['leaf'] = '';
 
                 if (selected['root'] in projects_selected){
                     if (projects_selected[selected['root']][1] != ''){
@@ -433,7 +455,9 @@ class KanbanDataClass{
     $('.connectedSortable').sortable({
         cancel: ".unsortable",
         update: function(e, ui) {
-
+            console.log('hi from drop');
+            console.log(ui);
+            console.log(e.target.id);
         },
         placeholder: 'sort-highlight',
         connectWith: '.connectedSortable',
