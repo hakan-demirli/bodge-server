@@ -27,7 +27,7 @@ class MyPlugin(Plugin):
             dummy_json = {"selected": {'root': '','branch': '','leaf': ''},
                             "selected_old": {'root': '','branch': '','leaf': ''},
                             "projects": {},
-                            "projects_accesable":  {'root': {},'branch': {},'leaf': {}},
+                            "projects_accesable":  {'root': {},'branch': {},'leaf': {},'todo':{},'prog':{},'done':{}},
                             'projects_selected':{}}
             with open(self.user_data_path, 'w') as outfile:
                 json.dump(dummy_json, outfile, indent=4)

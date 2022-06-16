@@ -13,22 +13,27 @@ class KanbanDataClass{
         this.projects = proj;
         this.projects_accesable = proj_ac;
     }
-    read(id,type){
-        return projects_accesable[type][id];
-    }
     add(id,type,txt){
         switch(type) {
             case 'root':
                 this.projects[id] = {txt:txt,childs:{}};
                 break;
             case 'branch':
-                this.projects[selected['root']]['childs'][id] = {txt:txt,childs:{}};
-                this.projects_accesable[type][id] = {parent:selected['root'],txt:txt,childs:{}};
+                this.projects[selected['root']]['childs'][id] = {parent:selected['root'], txt:txt,childs:{}};
+                this.projects_accesable[type][id] = {parent:selected['root'], txt:txt,childs:{}};
                 break;
             case 'leaf':
-                this. projects[selected['root']]['childs'][selected['branch']]['childs'][id] = {txt:txt,childs:{}};
-                this.projects_accesable['branch'][selected['branch']]['childs'][id] = {parents:{branch:selected['branch'],root:selected['root']},txt:txt,childs:{}};
+                this.projects[selected['root']]['childs'][selected['branch']]['childs'][id] = {parents:{branch:selected['branch'],root:selected['root']},txt:txt,childs:{todo:{},prog:{},done:{}}};
+                this.projects_accesable['branch'][selected['branch']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'];
                 this.projects_accesable[type][id] = {parents:{branch:selected['branch'],root:selected['root']},txt:txt,childs:{todo:{},prog:{},done:{}}};
+                break;
+            case 'todo':
+            case 'prog':
+            case 'done':
+                this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id] = {parents:{branch:selected['branch'],root:selected['root'],leaf:selected['leaf']},txt:txt};
+                this.projects_accesable['branch'][selected['branch']] = this.projects[selected['root']]['childs'][selected['branch']]['childs'];
+                this.projects_accesable['leaf'][selected['leaf']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'];
+                this.projects_accesable[type][id] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id]
                 break;
         }
     }
@@ -37,6 +42,11 @@ class KanbanDataClass{
             case 'root':
                 for(let branch_id in this.projects[id]['childs']){ //for every branch
                     for(let leaf_id in this.projects[id]['childs'][branch_id]['childs']){ // for every leaf
+                        for(let tpd in ['todo','prog','done']){ // for every todo,prog,done
+                            for(let entity in this.projects[id]['childs'][branch_id]['childs'][leaf_id]['childs'][tpd]){ // for every todo,prog,done
+                                delete this.projects_accesable[tpd][entity];
+                            }
+                        }
                         delete this.projects_accesable['leaf'][leaf_id];
                     }
                     delete this.projects_accesable['branch'][branch_id];
@@ -44,14 +54,39 @@ class KanbanDataClass{
                 delete this.projects[id];
                 break;
             case 'branch':
-                for(let leaf_id in this.projects[this.projects_accesable[type][id]['parent']]['childs'][id]['childs']){ // for every leaf
+                let prootid = this.projects_accesable[type][id]['parent'];
+                for(let leaf_id in this.projects[prootid]['childs'][id]['childs']){ // for every leaf
+                    for(let tpd in ['todo','prog','done']){ // for every todo,prog,done
+                        for(let entity in this.projects[prootid]['childs'][id]['childs'][leaf_id]['childs'][tpd]){ // for every todo,prog,done
+                            delete this.projects_accesable[tpd][entity];
+                        }
+                    }
                     delete this.projects_accesable['leaf'][leaf_id];
                 }
-                delete this.projects[this.projects_accesable[type][id]['parent']]['childs'][id];
+                delete this.projects[prootid]['childs'][id];
                 delete this.projects_accesable[type][id];
                 break;
             case 'leaf':
-                delete this.projects[this.projects_accesable[type][id]['parents']['root']]['childs'][this.projects_accesable[type][id]['parents']['branch']]['childs'][id];
+                let psrootid = this.projects_accesable[type][id]['parents']['root'];
+                let psbranchid = this.projects_accesable[type][id]['parents']['branch'];
+                for(let tpd in ['todo','prog','done']){ // for every todo,prog,done
+                    for(let entity in this.projects[psrootid]['childs'][psbranchid]['childs'][id]['childs'][tpd]){ // for every todo,prog,done
+                        delete this.projects_accesable[tpd][entity];
+                    }
+                }
+                delete this.projects_accesable[type][id];
+                delete this.projects_accesable['branch'][psbranchid]['childs'][id];
+                delete this.projects[psrootid]['childs'][psbranchid]['childs'][id];
+                break;
+            case 'todo':
+            case 'prog':
+            case 'done':
+                let ps3rootid = this.projects_accesable[type][id]['parents']['root'];
+                let ps3branchid = this.projects_accesable[type][id]['parents']['branch'];
+                let ps3leafid = this.projects_accesable[type][id]['parents']['leaf'];
+                delete this.projects[ps3rootid]['childs'][ps3branchid]['childs'][ps3leafid]['childs'][type][id];
+                delete this.projects_accesable['branch'][ps3branchid]['childs'][ps3leafid]['childs'][type][id];
+                delete this.projects_accesable[ps3leafid]['childs'][type][id];
                 delete this.projects_accesable[type][id];
                 break;
         }
@@ -96,7 +131,7 @@ class KanbanDataClass{
                 }
                 if(column_type_branch){
                     kanban_data.remove(id,'branch');
-                    projects_accesable
+                    //projects_accesable
                 }
                 if(column_type_leaf){
                     kanban_data.remove(id,'leaf');
@@ -149,12 +184,11 @@ class KanbanDataClass{
                 }
                 tmp = tmp + fuckcss;
                 $(`.kanban-projects-branch`).children('#kanban-projects-body').html(tmp);
-
+            case 'branch':
                 if( selected['branch'] == '')
-                break;
+                    break;
                 if ($.isEmptyObject(kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"]))
                     break;
-
                 tmp = '';
                 for(let key in kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"]){
                     let txt =  kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"][key]['txt'];
@@ -166,24 +200,29 @@ class KanbanDataClass{
                 }
                 tmp = tmp + fuckcss;
                 $(`.kanban-projects-leaf`).children('#kanban-projects-body').html(tmp);
-            break;
-            case 'branch':
-                if( selected['branch'] == '')
+            case 'leaf':
+                if(selected['leaf'] == '')
                     break;
-                if ($.isEmptyObject(kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"]))
+                if($.isEmptyObject(kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"][selected['leaf']]["childs"]['todo']) &&
+                    $.isEmptyObject(kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"][selected['leaf']]["childs"]['prog']) &&
+                    $.isEmptyObject(kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"][selected['leaf']]["childs"]['done']))
                     break;
-
-                for(let key in kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"]){
-                    let txt =  kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"][key]['txt'];
-                    let ak = `
-                    <div class="card">
-                        <div class="card-body card-saved leaf" id=${key} style='white-space:pre'>${txt}</div><i class="fa-solid fa-rectangle-xmark"></i>
-                    </div>`;
-                    tmp = tmp + ak;
+                tmp = '';
+                for(let tpd in kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs']){
+                    for(let key in  kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][tpd]){
+                        let txt = kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][tpd][key]['txt'];
+                        let ak = `
+                        <div class="card">
+                            <div class="card-body card-saved leaf" id=${key} style='white-space:pre'>${txt}</div><i class="fa-solid fa-rectangle-xmark"></i>
+                        </div>`;
+                        `<div class="card">
+                            <div class="card-header card-header-drag"></div>
+                            <div class="card-body card-saved ${tpd}" id=${key} style='white-space:pre'>${txt}</div><i class="fa-solid fa-square-xmark"></i>
+                        </div>`;
+                        tmp = tmp + ak;
+                    }
+                    $(`#kanban-${tpd}-card`).children(`#kanban-${tpd}-body`).html(tmp);
                 }
-                tmp = tmp + fuckcss;
-                $(`.kanban-projects-leaf`).children('#kanban-projects-body').html(tmp);
-            break;
         }
     }
 
@@ -195,31 +234,31 @@ class KanbanDataClass{
 
         switch(column_type) {
             case 'root':
-                if($(`.kanban-projects-root`).children('#kanban-projects-body').children(`.card`).children(`#${projects_selected[selected['root']][0]}`).hasClass('bg-info')){
+                if($(`.kanban-projects-root`).children('#kanban-projects-body').children(`.card`).children(`#${selected['root']}`).hasClass('bg-info')){
                     //console.log("nope")
                 }else{
-                    $(`.kanban-projects-root`).children('#kanban-projects-body').children(`.card`).children(`#${projects_selected[selected['root']][0]}`).toggleClass('bg-info')
+                    $(`.kanban-projects-root`).children('#kanban-projects-body').children(`.card`).children(`#${selected['root']}`).toggleClass('bg-info')
                 }
-                if (projects_selected[selected['root']][1] != '')
-                    $(`.kanban-projects-branch`).children('#kanban-projects-body').children(`.card`).children(`#${projects_selected[selected['root']][1]}`).toggleClass('bg-info');
-                if (projects_selected[selected['root']][2] != '')
-                    $(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${projects_selected[selected['root']][2]}`).toggleClass('bg-info');
+                if (selected['branch'] != '')
+                    $(`.kanban-projects-branch`).children('#kanban-projects-body').children(`.card`).children(`#${selected['branch']}`).toggleClass('bg-info');
+                if (selected['leaf'] != '')
+                    $(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${selected['leaf']}`).toggleClass('bg-info');
 
             break;
             case 'branch':
-                if($(`.kanban-projects-branch`).children('#kanban-projects-body').children(`.card`).children(`#${projects_selected[selected['root']][1]}`).hasClass('bg-info')){
+                if($(`.kanban-projects-branch`).children('#kanban-projects-body').children(`.card`).children(`#${selected['branch']}`).hasClass('bg-info')){
                     //console.log("nope")
                 }else{
-                    $(`.kanban-projects-branch`).children('#kanban-projects-body').children(`.card`).children(`#${projects_selected[selected['root']][1]}`).toggleClass('bg-info')
+                    $(`.kanban-projects-branch`).children('#kanban-projects-body').children(`.card`).children(`#${selected['branch']}`).toggleClass('bg-info')
                 }
-                if (projects_selected[selected['root']][2] != '')
-                    $(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${projects_selected[selected['root']][2]}`).toggleClass('bg-info');
+                if (selected['leaf'] != '')
+                    $(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${selected['leaf']}`).toggleClass('bg-info');
             break;
             case 'leaf':
-                if($(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${projects_selected[selected['root']][2]}`).hasClass('bg-info')){
-                    //console.log("nope")
+                if($(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${selected['leaf']}`).hasClass('bg-info')){
+                    //console.log("nope");
                 }else{
-                    $(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${projects_selected[selected['root']][2]}`).toggleClass('bg-info')
+                    $(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${selected['leaf']}`).toggleClass('bg-info')
                 }
             break;
         }
@@ -233,8 +272,17 @@ class KanbanDataClass{
                 selected_old['leaf'] = '';
                 selected[column_type] = id;
 
-                if ((selected['root'] in projects_selected) && (selected['root'] != '')){
-                    selectCardBackend('branch',projects_selected[selected['root']][1]);
+                if (selected['root'] in projects_selected){
+                    if (projects_selected[selected['root']][1] != ''){
+                        selected['branch'] = projects_selected[selected['root']][1];
+                    }else{
+                        selected['branch'] = '';
+                    }
+                    if (projects_selected[selected['root']][2] != ''){
+                        selected['leaf'] = projects_selected[selected['root']][2];
+                    }else{
+                        selected['leaf'] = '';
+                    }
                 }else{
                     projects_selected[selected['root']] = Array(3).fill('');
                     projects_selected[selected['root']][0] = selected['root'];
@@ -244,22 +292,24 @@ class KanbanDataClass{
                 selected_old['branch'] =  selected['branch'];
                 selected_old['leaf'] = '';
                 selected[column_type] = id;
-                if ((projects_selected[selected['root']][1] in projects_selected) && (selected['root'][1] != '')){
-                    selectCardBackend('leaf',projects_selected[selected['root']][2]);
+                selected['leaf'] = '';
+                projects_selected[selected['root']][1] = selected[column_type];
+                projects_selected[selected['root']][2] = '';
+
+                if (projects_selected[selected['root']][2] != ''){
+                    selected['leaf'] = projects_selected[selected['root']][2];
                 }else{
-                    projects_selected[selected['root']][1] = selected['branch'];
+                    selected['leaf'] = '';
                 }
             break;
             case 'leaf':
                 selected_old['leaf'] = selected['leaf'];
                 selected[column_type] = id;
-                if ((projects_selected[selected['root']][2] in projects_selected) && (selected['root'][2] != '')){
-
-                }else{
-                    projects_selected[selected['root']][2] = selected['leaf'];
-                }
+                projects_selected[selected['root']][2] = selected[column_type];
             break;
         }
+        console.log('selected',selected);
+        console.log('projects_selected',projects_selected);
     }
 
     /**
@@ -282,11 +332,20 @@ class KanbanDataClass{
             case 'root':
                 $(`.kanban-projects-leaf`).children('#kanban-projects-body').html(fuckcss);
                 $(`.kanban-projects-branch`).children('#kanban-projects-body').html(fuckcss);
+                $(`#kanban-todo-card`).children('#kanban-todo-body').html('');
+                $(`#kanban-prog-card`).children('#kanban-prog-body').html('');
+                $(`#kanban-done-card`).children('#kanban-done-body').html('');
             break;
             case 'branch':
                 $(`.kanban-projects-leaf`).children('#kanban-projects-body').html(fuckcss);
+                $(`#kanban-todo-card`).children('#kanban-todo-body').html('');
+                $(`#kanban-prog-card`).children('#kanban-prog-body').html('');
+                $(`#kanban-done-card`).children('#kanban-done-body').html('');
             break;
             case 'leaf':
+                $(`#kanban-todo-card`).children('#kanban-todo-body').html('');
+                $(`#kanban-prog-card`).children('#kanban-prog-body').html('');
+                $(`#kanban-done-card`).children('#kanban-done-body').html('');
             break;
         }
     }
@@ -386,10 +445,10 @@ class KanbanDataClass{
 
     window.onload = kanbanReadBackend();
 
-    var kanban_data = new KanbanDataClass({}, {root:{},branch:{},leaf:{}});
+    var kanban_data = new KanbanDataClass({}, {root:{},branch:{},leaf:{},todo:{},prog:{},done:{}});
 
     $('#kanban-todo-card').children('.card-header').children('.card-tools').on("click",('.kanban-plus'),{ extra : {row:4,name:'kanban-todo'}},addEditCard);
-    $('#kanban-todo-body').on("click",('#kanban-add-button'),{ extra : {name:'kanban-todo',icon:"fa-solid fa-square-xmark",header:1}},saveCard);
+    $('#kanban-todo-body').on("click",('#kanban-add-button'),{ extra : {name:'kanban-todo',icon:"fa-solid fa-square-xmark",header:1,type:'todo'}},saveCard);
     $('#kanban-todo-body').on("click",('#kanban-cancel-button'),removeCard);
     $('.card-body, .fa-square-xmark').on("click",('.fa-square-xmark'),removeAddedCard);
 
