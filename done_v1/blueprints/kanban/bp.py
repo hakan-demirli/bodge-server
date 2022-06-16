@@ -3,6 +3,7 @@ from flask_simplelogin import login_required
 from pathlib import Path
 from ..Plugin import Plugin
 import time, json, os
+import threading
 
 class MyPlugin(Plugin):
     bp = Blueprint( name='Kanban',
@@ -14,6 +15,7 @@ class MyPlugin(Plugin):
     icon = 'fa-solid fa-table-columns'
     page = 1
     card = 0
+    lock = threading.Lock()
 
     def __init__(self,all_q,my_q):
         Plugin.__init__(self,all_q,my_q)
@@ -42,13 +44,14 @@ class MyPlugin(Plugin):
         return render_template('kanban/kanban.html')
 
     def kanban_backend(self):
-        req = request.get_json()
-        jsn_res = {}
-        match req['command']:
-            case 'READ':
-                with open(self.user_data_path) as json_file:
-                    jsn_res = json.load(json_file)
-            case 'WRITE':
-                with open(self.user_data_path, 'w') as outfile:
-                    json.dump(req, outfile, indent=4)
-        return make_response(jsonify(jsn_res), 200)
+        with self.lock:
+            req = request.get_json()
+            jsn_res = {}
+            match req['command']:
+                case 'READ':
+                    with open(self.user_data_path) as json_file:
+                        jsn_res = json.load(json_file)
+                case 'WRITE':
+                    with open(self.user_data_path, 'w') as outfile:
+                        json.dump(req, outfile, indent=4)
+            return make_response(jsonify(jsn_res), 200)

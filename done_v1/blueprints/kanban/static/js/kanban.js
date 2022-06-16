@@ -36,6 +36,7 @@ class KanbanDataClass{
                 this.projects_accesable[type][id] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id]
                 break;
         }
+        kanbanWriteBackend();
     }
     remove(id,type){
         switch(type) {
@@ -89,10 +90,11 @@ class KanbanDataClass{
                 let ps3leafid = this.projects_accesable[type][id]['parents']['leaf'];
                 delete this.projects[ps3rootid]['childs'][ps3branchid]['childs'][ps3leafid]['childs'][type][id];
                 delete this.projects_accesable['branch'][ps3branchid]['childs'][ps3leafid]['childs'][type][id];
-                delete this.projects_accesable[ps3leafid]['childs'][type][id];
+                delete this.projects_accesable['leaf'][ps3leafid]['childs'][type][id];
                 delete this.projects_accesable[type][id];
                 break;
         }
+        kanbanWriteBackend();
     }
 }
 
@@ -115,7 +117,20 @@ class KanbanDataClass{
     }
 
     function removeAddedCard(e) {
+        let id = $(e.target).parent('.card').children('.card-saved').attr("id");
+        let column_type_todo = $(e.target).parent('.card').children('.card-saved').hasClass('todo');
+        let column_type_prog = $(e.target).parent('.card').children('.card-saved').hasClass('prog');
+        let column_type_done = $(e.target).parent('.card').children('.card-saved').hasClass('done');
         e.target.closest('.card').remove();
+        if(column_type_todo){
+            kanban_data.remove(id,'todo');
+        }
+        if(column_type_prog){
+            kanban_data.remove(id,'prog');
+        }
+        if(column_type_done){
+            kanban_data.remove(id,'done');
+        }
     }
 
     function removeAddedProjectNode(e) {
@@ -134,10 +149,12 @@ class KanbanDataClass{
                 }
                 if(column_type_branch){
                     kanban_data.remove(id,'branch');
-                    //projects_accesable
+                    projects_selected[kanban_data.projects_accesable['branch'][id]['parent']][1] = '';
+                    projects_selected[kanban_data.projects_accesable['branch'][id]['parent']][2] = '';
                 }
                 if(column_type_leaf){
                     kanban_data.remove(id,'leaf');
+                    projects_selected[kanban_data.projects_accesable['leaf'][id]['parent']][2] = '';
                 }
                 kanbanWriteBackend();
             }
@@ -321,7 +338,11 @@ class KanbanDataClass{
                 if (projects_selected[selected['root']][2] != ''){
                     selected['leaf'] = projects_selected[selected['root']][2];
                 }else{
-                    selected['leaf'] = '';
+                    let akey;
+                    for(akey in kanban_data.projects_accesable['branch'][id]['childs']){
+                        break;
+                    }
+                    selected['leaf'] = akey;
                 }
             break;
             case 'leaf':
@@ -455,9 +476,56 @@ class KanbanDataClass{
     $('.connectedSortable').sortable({
         cancel: ".unsortable",
         update: function(e, ui) {
-            console.log('hi from drop');
-            console.log(ui);
-            console.log(e.target.id);
+
+        },
+        receive: function( e, ui ) {
+            let dropped_card = ui.item.find(".card-saved");
+            let card_id = dropped_card.attr('id');
+            let body_name = e.target.id;
+            console.log(body_name);
+            console.log(card_id);
+            console.log(dropped_card);
+            switch(body_name){
+                case 'kanban-todo-body':
+                    kanban_data.add(card_id,'todo');
+                    if(dropped_card.hasClass("prog")){
+                        kanban_data.remove(card_id,'prog');
+                        dropped_card.toggleClass('prog');
+                        dropped_card.toggleClass('todo');
+                    }
+                    if(dropped_card.hasClass("done")){
+                        kanban_data.remove(card_id,'done');
+                        dropped_card.toggleClass('done');
+                        dropped_card.toggleClass('todo');
+                    }
+                break;
+                case 'kanban-prog-body':
+                    kanban_data.add(card_id,'prog');
+                    if(dropped_card.hasClass("done")){
+                        kanban_data.remove(card_id,'done');
+                        dropped_card.toggleClass('done');
+                        dropped_card.toggleClass('prog');
+                    }
+                    if(dropped_card.hasClass("todo")){
+                        kanban_data.remove(card_id,'todo');
+                        dropped_card.toggleClass('todo');
+                        dropped_card.toggleClass('prog');
+                    }
+                break;
+                case 'kanban-done-body':
+                    kanban_data.add(card_id,'done');
+                    if(dropped_card.hasClass("prog")){
+                        kanban_data.remove(card_id,'prog');
+                        dropped_card.toggleClass('prog');
+                        dropped_card.toggleClass('done');
+                    }
+                    if(dropped_card.hasClass("todo")){
+                        kanban_data.remove(card_id,'todo');
+                        dropped_card.toggleClass('todo');
+                        dropped_card.toggleClass('done');
+                    }
+                break;
+            }
         },
         placeholder: 'sort-highlight',
         connectWith: '.connectedSortable',
