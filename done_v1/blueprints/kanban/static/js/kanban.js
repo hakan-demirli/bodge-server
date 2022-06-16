@@ -187,7 +187,7 @@ class KanbanDataClass{
                 break;
             case 'leaf':
                 if(selected['branch'] == ''){
-                    toastr.info(`Can't add without a parent.`)
+                    toastr.warning(`Can't add without a parent.`)
                     return;
                 }
                 break;
