@@ -139,7 +139,7 @@ class KanbanDataClass{
         let column_type_branch = $(e.target).parent('.card').children('.card-saved').hasClass('branch');
         let column_type_leaf = $(e.target).parent('.card').children('.card-saved').hasClass('leaf');
         if(id == selected['root'] || id == selected['branch'] || id == selected['leaf']){
-            alert("you can't delete selected items");
+            toastr.warning("you can't delete selected items");
         }else{
             if (confirm('Delete? U sure?')){
                 e.target.closest('.card').remove();
@@ -181,13 +181,13 @@ class KanbanDataClass{
         switch(e.data.extra.type) {
             case 'branch':
                 if(selected['root'] == ''){
-                    toastr.warning(`Can't add without a parent.`)
+                    toastr.warning(`Can't add without a parent.`);
                     return;
                 }
                 break;
             case 'leaf':
                 if(selected['branch'] == ''){
-                    toastr.warning(`Can't add without a parent.`)
+                    toastr.warning(`Can't add without a parent.`);
                     return;
                 }
                 break;
@@ -195,7 +195,7 @@ class KanbanDataClass{
             case 'prog':
             case 'done':
                 if(selected['leaf'] == ''){
-                    toastr.warning(`Can't add without a parent.`)
+                    toastr.warning(`Can't add without a parent.`);
                     return;
                 }
                 break;
@@ -275,7 +275,7 @@ class KanbanDataClass{
                 if($(`.kanban-projects-root`).children('#kanban-projects-body').children(`.card`).children(`#${selected['root']}`).hasClass('bg-info')){
                     //console.log("nope")
                 }else{
-                    $(`.kanban-projects-root`).children('#kanban-projects-body').children(`.card`).children(`#${selected['root']}`).toggleClass('bg-info')
+                    $(`.kanban-projects-root`).children('#kanban-projects-body').children(`.card`).children(`#${selected['root']}`).toggleClass('bg-info');
                 }
                 if (selected['branch'] != '')
                     $(`.kanban-projects-branch`).children('#kanban-projects-body').children(`.card`).children(`#${selected['branch']}`).toggleClass('bg-info');
@@ -287,7 +287,7 @@ class KanbanDataClass{
                 if($(`.kanban-projects-branch`).children('#kanban-projects-body').children(`.card`).children(`#${selected['branch']}`).hasClass('bg-info')){
                     //console.log("nope")
                 }else{
-                    $(`.kanban-projects-branch`).children('#kanban-projects-body').children(`.card`).children(`#${selected['branch']}`).toggleClass('bg-info')
+                    $(`.kanban-projects-branch`).children('#kanban-projects-body').children(`.card`).children(`#${selected['branch']}`).toggleClass('bg-info');
                 }
                 if (selected['leaf'] != '')
                     $(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${selected['leaf']}`).toggleClass('bg-info');
@@ -296,7 +296,7 @@ class KanbanDataClass{
                 if($(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${selected['leaf']}`).hasClass('bg-info')){
                     //console.log("nope");
                 }else{
-                    $(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${selected['leaf']}`).toggleClass('bg-info')
+                    $(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${selected['leaf']}`).toggleClass('bg-info');
                 }
             break;
         }
@@ -534,7 +534,7 @@ class KanbanDataClass{
         forcePlaceholderSize: true,
         zIndex: 999999
     })
-    $('.connectedSortable .card-header-drag').css('cursor', 'move')
+    $('.connectedSortable .card-header-drag').css('cursor', 'move');
 
     window.onload = kanbanReadBackend();
 
