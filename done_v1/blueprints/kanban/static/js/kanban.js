@@ -194,7 +194,7 @@ class KanbanDataClass{
             case 'todo':
             case 'prog':
             case 'done':
-                if(selected['leaf'] == ''){
+                if(selected['leaf'] == '' || $.isEmptyObject(kanban_data.projects_accesable['branch'][selected['branch']]['childs'])){
                     toastr.warning(`Can't add without a parent.`);
                     return;
                 }
@@ -208,6 +208,7 @@ class KanbanDataClass{
         selectCardFrontend(e.data.extra.type);
         kanbanWriteBackend();
     }
+
     function recreateRightColumns(column_type){
         nukeRightColumns(column_type);
         let tmp = '';
