@@ -19,7 +19,7 @@ function sidebarReadBackend() {
 
             data["sidebar"].forEach(function(val){
                 let tml = ` <li class="nav-item">
-                                <a href="${val['url']}" class="nav-link {% if 'widgets' in segment %}  {% endif %}">
+                                <a href="${val['url']}" class="nav-link {% if '${val['name']}' in segment %}  {% endif %}">
                                     <i class="nav-icon ${val["icon"]}"></i>
                                     <p>${val['name']}</p>
                                 </a>

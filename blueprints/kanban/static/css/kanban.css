@@ -1,4 +1,7 @@
-
+.tab-content{
+    overflow: hidden;
+    height: 89vh;
+}
 .kanban{
     margin-left: 0px !important;
     padding: 0;

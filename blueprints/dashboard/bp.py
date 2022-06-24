@@ -20,7 +20,7 @@ class MyPlugin(Plugin):
         Plugin.__init__(self,all_q,my_q)
         self.__init_user_data()
         self.bp.route('/')(login_required(self.dashboard))
-        self.bp.route('/backend')(login_required(self.dashboard_backend))
+        self.bp.route('/backend', methods=["POST"])(login_required(self.dashboard_backend))
 
     def __init_user_data(self):
         if(not os.path.isfile(self.user_data_path)):

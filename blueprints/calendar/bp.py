@@ -5,7 +5,7 @@ from ..Plugin import Plugin
 import time, json, os
 
 class MyPlugin(Plugin):
-    bp = Blueprint( name='calendar',
+    bp = Blueprint( name='Calendar',
                 import_name=__name__,
                 url_prefix='/calendar',
                 template_folder='templates',

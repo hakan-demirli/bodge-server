@@ -1,42 +1,37 @@
 
+var serializedData = [];
+let serializedFull;
+
 let grid = GridStack.init({
 minRow: 1, // don't let it collapse when empty
 cellHeight: '7rem'
 });
 
 grid.on('added removed change', function(e, items) {
-let str = '';
-items.forEach(function(item) { str += ' (x,y)=' + item.x + ',' + item.y; });
-console.log(e.type + ' ' + items.length + ' items:' + str );
+    let str = '';
+    items.forEach(function(item) { str += ' (x,y)=' + item.x + ',' + item.y; });
+    console.log(e.type + ' ' + items.length + ' items:' + str );
 });
-
-var serializedData = [];
-let serializedFull;
 
 // 2.x method - just saving list of widgets with content (default)
 loadGrid = function() {
-grid.load(serializedData, true); // update things
+    grid.load(serializedData, true); // update things
 }
+
 $('iframe').css('pointer-events', 'none');
 // 3.1 full method saving the grid options + children (which is recursive for nested grids)
 saveFullGrid = function() {
-serializedFull = grid.save(true, true);
-serializedData = serializedFull.children;
-document.querySelector('#saved-data').value = JSON.stringify(serializedFull, null, '  ');
-}
-
-// 3.1 full method to reload from scratch - delete the grid and add it back from JSON
-loadFullGrid = function() {
-if (!serializedFull) return;
-grid.destroy(true); // nuke everything
-grid = GridStack.addGrid(document.querySelector('#gridCont'), serializedFull)
+    serializedFull = grid.save(true, true);
+    serializedData = serializedFull.children;
+    document.querySelector('#saved-data').value = JSON.stringify(serializedFull, null, '  ');
+    writeBackend();
 }
 
 clearGrid = function() {
-grid.removeAll();
+    grid.removeAll();
 }
 
-function ReadBackend() {
+function readBackend() {
     let entry = {
         command: 'READ'
     };
@@ -53,7 +48,7 @@ function ReadBackend() {
             return;
         }
         response.json().then(function (data) {
-            console.log(data)
+            console.log('reading backend dash: ',data);
             data["cards"].forEach(function(val){
                 let cnt = `<div class="my-card">
                             <div class="card-header">
@@ -65,14 +60,15 @@ function ReadBackend() {
                                     <button type="button" class="btn btn-tool btn-sm" onClick="grid.removeWidget(this.parentNode.parentNode.parentNode.parentNode.parentNode);"><i class="fas fa-times"></i></button>
                                 </div>
                             </div>
-                            <div id="resizable">
-                            <iframe src="${val["url"]}" frameborder="0" id="elemId"></iframe>
+                                <div id="resizable">
+                                <iframe src="${val["url"]}" frameborder="0" id="elemId"></iframe>
                             </div>
                            </div>`;
                 let uid = guid();
-                serializedData.push({w: 1, h: 1, id: uid, content: cnt})
+                serializedData.push({w: 1, h: 1, id: uid, content: cnt});
             });
-            console.log(serializedData)
+            console.log('serialized data: ',serializedData);
+            loadGrid();
         });
     })
     .catch(function (error) {
@@ -80,7 +76,32 @@ function ReadBackend() {
     });
 }
 
-ReadBackend()
+function writeBackend() {
+
+    let entry = {
+        serializedData: serializedData,
+        command: 'WRITE'
+    };
+
+    fetch(`${window.origin}/dashboard/backend`, {
+        method: "POST",
+        credentials: "include",
+        body: JSON.stringify(entry),
+        cache: "no-cache",
+        headers: new Headers({"content-type": "application/json"})
+    }).then(function (response) {
+        if (response.status !== 200) {
+            console.log(`Looks like there was a problem. Status code: ${response.status}`);
+            return;
+        }
+        response.json().then(function (data) {
+            //console.log(data);
+        });
+    })
+    .catch(function (error) {
+        console.log("Fetch error: " + error);
+    });
+}
 
 /**
 * Generates a GUID string.
@@ -90,12 +111,12 @@ ReadBackend()
 * @link http://slavik.meltser.info/?p=142
 */
 function guid() {
-   function _p8(s) {
-       var p = (Math.random().toString(16)+"000000000").substr(2,8);
-       return s ? "-" + p.substr(0,4) + "-" + p.substr(4,4) : p ;
-   }
-   return _p8() + _p8(true) + _p8(true) + _p8();
+    function _p8(s) {
+        var p = (Math.random().toString(16)+"000000000").substr(2,8);
+        return s ? "-" + p.substr(0,4) + "-" + p.substr(4,4) : p ;
+    }
+    return _p8() + _p8(true) + _p8(true) + _p8();
 }
 
-loadGrid();
+readBackend();
 

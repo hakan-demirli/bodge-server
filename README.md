@@ -1,5 +1,8 @@
 #TODO
+* [ ] Create documentation
+    * [ ] List dependencies
 * [x] Fix dynamic sidebar
+    * [ ] Highlight current page
 * [x] Use a premade admin template
     * [x] Use adminlte sidebar and navbar
 * [x] Use blueprints for all pages
@@ -9,15 +12,18 @@
 * [x] use templates with another page to be sure they are working
 * [x] add dark mode
 * [x] add templated gridstack as a route/serve
-    * [ ] implement serialization backend
-* [ ] add search for new widgets button
+    * [x] implement serialization backend
+        * [ ] Fix serialization backend bugs
+* [ ] add search for the new widgets button
 * [x] Add dynamic sidebar
 * [x] Add todo card
 * [x] Add clock card
-* [ ] Add a kanban webpage
-    * [ ] Use map to store the data hierarchy
-    * [ ] Store and restore the data
-* [ ] Add a calendar webpage
+* [x] Add a kanban webpage
+    * [x] Store and restore the data
+* [x] Add a calendar webpage
+    * [ ] Add backend to the calendar.
+        * [ ] Add an event to Google calendar via python.
+    * [x] Fix Calendar Position
 * [ ] Add a notepad webpage
 * [ ] Add a filebrowser webpage
 * [ ] Add a music/video player webpage
@@ -26,10 +32,3 @@
     * [ ] Add TTS
     * [ ] Add STT
     * [ ] Add intent engine
-
-
-Templates tutorial: https://www.digitalocean.com/community/tutorials/how-to-use-templates-in-a-flask-application
-
-Blueprints Tutorial: https://realpython.com/flask-blueprint/
-
-Frozen Flask: https://pythonhosted.org/Frozen-Flask/

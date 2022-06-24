@@ -62,7 +62,12 @@ var calendar = new Calendar(calendarEl, {
   headerToolbar: {
     left  : 'prev,next today',
     center: 'title',
-    right : 'dayGridMonth,timeGridWeek,timeGridDay'
+    right : 'dayGridMonth,timeGridWeek,timeGridDay,listDay,listWeek,listMonth'
+  },
+  views: {
+    listDay: { buttonText: 'list day' },
+    listWeek: { buttonText: 'list week' },
+    listMonth: { buttonText: 'list month' }
   },
   themeSystem: 'bootstrap',
   //Random default events
@@ -164,4 +169,5 @@ $('#add-new-event').click(function (e) {
   // Remove event from text input
   $('#new-event').val('')
 })
+
 })
