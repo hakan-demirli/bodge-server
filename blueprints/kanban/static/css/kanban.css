@@ -1,7 +1,7 @@
-#saved-card a{
+.card-saved a{
     visibility:hidden;
 }
-#saved-card:hover a {
+.card-saved:hover a {
    visibility:visible;
 }
 .fc .fc-list-sticky .fc-list-day > * {

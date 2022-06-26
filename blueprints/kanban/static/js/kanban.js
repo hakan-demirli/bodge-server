@@ -12,7 +12,7 @@ $(function () {
         let ak = `
         <div class="card card-saved">
             ${header ?('<div class="card-header card-header-drag"></div>'):('')}
-            <div class="card-body card-saved-body ${type}" id=${guid} style='white-space:pre'>${txt}</div>
+            <div class="card-body card-saved-body ${type}" id=${guid}>${txt}</div>
             <a href='#'><i class="${icon}"></i></a>
         </div>`;
         return ak;
@@ -264,22 +264,29 @@ $(function () {
     }
 
     function selectCardFrontend(column_type){
-        if (selected_old[column_type] != '')
+        let root_sel;
+        let branch_sel;
+        let leaf_sel;
+        if(selected_old[column_type] != '')
             $(`.kanban-projects-${column_type}`).children('#kanban-projects-body').children(`.card`).children(`#${selected_old[column_type]}`).toggleClass('bg-info');
-        if( selected['root'] == '')
-            return;
-        let root_sel   = $(`.kanban-projects-root`).children('#kanban-projects-body').children(`.card`).children(`#${selected['root']}`);
-        let branch_sel = $(`.kanban-projects-branch`).children('#kanban-projects-body').children(`.card`).children(`#${selected['branch']}`);
-        let leaf_sel   = $(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${selected['leaf']}`);
+        if(selected['root'] != ''){
+            root_sel = $(`.kanban-projects-root`).children('#kanban-projects-body').children(`.card`).children(`#${selected['root']}`);
+        }else{return;}
+        if(selected['branch'] != ''){
+            branch_sel = $(`.kanban-projects-branch`).children('#kanban-projects-body').children(`.card`).children(`#${selected['branch']}`);
+        }
+        if(selected['leaf'] != ''){
+            leaf_sel   = $(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${selected['leaf']}`);
+        }
         switch(column_type) {
             case 'root':
                 if(!root_sel.hasClass('bg-info')){root_sel.toggleClass('bg-info');}
-                if(selected['branch'] != ''){branch_sel.toggleClass('bg-info');}
-                if(selected['leaf'] != ''){leaf_sel.toggleClass('bg-info');}
+                branch_sel.toggleClass('bg-info');
+                leaf_sel.toggleClass('bg-info');
             break;
             case 'branch':
                 if(!branch_sel.hasClass('bg-info')){branch_sel.toggleClass('bg-info');}
-                if (selected['leaf'] != ''){leaf_sel.toggleClass('bg-info');}
+                leaf_sel.toggleClass('bg-info');
             break;
             case 'leaf':
                 if(!leaf_sel.hasClass('bg-info')){leaf_sel.toggleClass('bg-info');}
