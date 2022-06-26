@@ -695,16 +695,20 @@ function ini_events(ele) {
     droppable : false
   });
 
-
-  var myTimeout = setTimeout(myGreeting, 1000);
-  function myGreeting(){
+  var myTimeout;
+  setTimeout(initialCalendarRender, 1000);
+  setTimeout(initialCalendarRender, 2000);
+  function initialCalendarRender(){
+    // calendar is distorted at the beginning. This is an official bug.
+    // Fix it by rendering it few times at the beginning.
     calendar.render();
-    clearTimeout(myTimeout);
   }
-  $('#sidebar-toggle-button').on( "click", function() {
-    // sidebar distorts the calendar. We have to re-render it.
+
+  $('#sidebar-toggle-button, #pills-calendar-view-tab').on( "click", function() {
+    // Sidebar distorts the calendar. We have to re-render it.
+    // Bootstrap 5 tabs distorts the calendar. We have to re-render it.
     // Movement of sidebar is slower than the render speed. Which causes an incorrect render.
-    // Hence, call the render function after sidebar is fully extended. Which means waiting a little bit before render request.
-    myTimeout = setTimeout(myGreeting, 100);
+    // Hence, call the render function after sidebar is fully extended. Which means waiting a little bit before requesting render.
+    myTimeout = setTimeout(function(){calendar.updateSize();clearTimeout(myTimeout);}, 100);
   });
 })

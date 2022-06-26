@@ -1,3 +1,6 @@
+.calendar-card{
+    width: 60%;
+}
 .tab-content{
     overflow: hidden;
     height: 89vh;
