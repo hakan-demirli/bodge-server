@@ -103,8 +103,17 @@ class KanbanDataClass{
         let ak = `
         <div class="form-group">
             <textarea class="form-control" rows="${e.data.extra.row}" placeholder="..."></textarea>
+            <div class='input-group' id='datetimepicker1' data-td-target-input='nearest' data-td-target-toggle='nearest'>
+                <input id='clock-add-time' type='text' class='form-control datetimepicker-input' data-td-target='#datetimepicker1'/>
+                <span class='input-group-text' data-td-target='#datetimepicker1' data-td-toggle='datetimepicker'>
+                   <span class='fa-solid fa-calendar'></span>
+                </span>
+            </div>
             <button type="submit" class="btn btn-primary w-50" id="kanban-add-button"><i class="fa-solid fa-check"></i></button>
             <button type="submit" class="btn btn-secondary float-right w-50" id="kanban-cancel-button"><i class="fas fa-times"></i></button>
+            <script>
+                new tempusDominus.TempusDominus(document.getElementById('datetimepicker1'));
+            </script>
         </div>`;
         console.log(`#${e.data.extra.name}-card`);
         console.log($(e.target.closest(`#${e.data.extra.name}-card`)));
