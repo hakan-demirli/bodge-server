@@ -2,122 +2,143 @@
 $(function () {
 'use strict'
 
-var fuckcss = `<div class="form-group" style="  visibility: hidden; width: 9%;">
-                <textarea class="form-control" rows="1" placeholder="Enter a note"></textarea>
-                <button type="submit" class="btn btn-primary w-50" id="kanban-add-button"><i class="fa-solid fa-check"></i></button>
-                <button type="submit" class="btn btn-secondary float-right w-50" id="kanban-cancel-button"><i class="fas fa-times"></i></button>
-               </div>`;
+    var fuckcss = `<div class="form-group" style="  visibility: hidden; width: 9%;">
+                    <textarea class="form-control" rows="1" placeholder="Enter a note"></textarea>
+                    <button type="submit" class="btn btn-primary w-50" id="kanban-add-button"><i class="fa-solid fa-check"></i></button>
+                    <button type="submit" class="btn btn-secondary float-right w-50" id="kanban-cancel-button"><i class="fas fa-times"></i></button>
+                </div>`;
 
-class KanbanDataClass{
-    constructor(proj,proj_ac) {
-        this.projects = proj;
-        this.projects_accesable = proj_ac;
+    function savedCard(header,type,guid,txt,icon){
+        let ak = `
+        <div class="card saved-card">
+            ${header ?('<div class="card-header card-header-drag"></div>'):('')}
+            <div class="card-body card-saved ${type}" id=${guid} style='white-space:pre'>${txt}</div>
+            <a href='#'><i class="${icon}"></i></a>
+        </div>`;
+        return ak;
     }
-    add(id,type,txt){
-        switch(type) {
-            case 'root':
-                this.projects[id] = {txt:txt,childs:{}};
-                break;
-            case 'branch':
-                this.projects[selected['root']]['childs'][id] = {parent:selected['root'], txt:txt,childs:{}};
-                this.projects_accesable[type][id] = this.projects[selected['root']]['childs'][id];
-                break;
-            case 'leaf':
-                this.projects[selected['root']]['childs'][selected['branch']]['childs'][id] = {parents:{branch:selected['branch'],root:selected['root']},txt:txt,childs:{todo:{},prog:{},done:{}}};
-                this.projects_accesable['branch'][selected['branch']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'];
-                this.projects_accesable[type][id] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][id];
-                break;
-            case 'todo':
-            case 'prog':
-            case 'done':
-                this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id] = {parents:{branch:selected['branch'],root:selected['root'],leaf:selected['leaf']},txt:txt};
-                this.projects_accesable['branch'][selected['branch']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'];
-                this.projects_accesable['leaf'][selected['leaf']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'];
-                this.projects_accesable[type][id] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id];
-                break;
+
+    function editCard(row,date){
+        let ak = `
+        <div class="form-group">
+            <textarea class="form-control" rows="${row}" placeholder="..."></textarea>
+            ${date ?(`
+                    <div class='input-group' id='datetimepicker1' data-td-target-input='nearest' data-td-target-toggle='nearest'>
+                        <input id='clock-add-time' type='text' class='form-control datetimepicker-input' data-td-target='#datetimepicker1'/>
+                        <span class='input-group-text' data-td-target='#datetimepicker1' data-td-toggle='datetimepicker'>
+                        <span class='fa-solid fa-calendar'></span>
+                        </span>
+                    </div>
+                    <script>
+                        new tempusDominus.TempusDominus(document.getElementById('datetimepicker1'));
+                    </script>
+                    `):('')}
+            <button type="submit" class="btn btn-primary w-50" id="kanban-add-button"><i class="fa-solid fa-check"></i></button>
+            <button type="submit" class="btn btn-secondary float-right w-50" id="kanban-cancel-button"><i class="fas fa-times"></i></button>
+        </div>`;
+        return ak;
+    }
+
+    var projects_selected = {};
+    var selected = {'root': '',
+                    'branch': '',
+                    'leaf': ''};
+    var selected_old = {'root': '',
+                    'branch': '',
+                    'leaf': ''};
+
+    class KanbanDataClass{
+        constructor(proj,proj_ac) {
+            this.projects = proj;
+            this.projects_accesable = proj_ac;
         }
-        kanbanWriteBackend();
-    }
-    remove(id,type){
-        switch(type) {
-            case 'root':
-                for(let branch_id in this.projects[id]['childs']){ //for every branch
-                    for(let leaf_id in this.projects[id]['childs'][branch_id]['childs']){ // for every leaf
+        add(id,type,txt){
+            switch(type) {
+                case 'root':
+                    this.projects[id] = {txt:txt,childs:{}};
+                    break;
+                case 'branch':
+                    this.projects[selected['root']]['childs'][id] = {parent:selected['root'], txt:txt,childs:{}};
+                    this.projects_accesable[type][id] = this.projects[selected['root']]['childs'][id];
+                    break;
+                case 'leaf':
+                    this.projects[selected['root']]['childs'][selected['branch']]['childs'][id] = {parents:{branch:selected['branch'],root:selected['root']},txt:txt,childs:{todo:{},prog:{},done:{}}};
+                    this.projects_accesable['branch'][selected['branch']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'];
+                    this.projects_accesable[type][id] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][id];
+                    break;
+                case 'todo':
+                case 'prog':
+                case 'done':
+                    this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id] = {parents:{branch:selected['branch'],root:selected['root'],leaf:selected['leaf']},txt:txt};
+                    this.projects_accesable['branch'][selected['branch']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'];
+                    this.projects_accesable['leaf'][selected['leaf']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'];
+                    this.projects_accesable[type][id] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id];
+                    break;
+            }
+            kanbanWriteBackend();
+        }
+        remove(id,type){
+            switch(type) {
+                case 'root':
+                    for(let branch_id in this.projects[id]['childs']){ //for every branch
+                        for(let leaf_id in this.projects[id]['childs'][branch_id]['childs']){ // for every leaf
+                            for(let tpd in {'todo':'','prog':'','done':''}){ // for every todo,prog,done
+                                for(let entity in this.projects[id]['childs'][branch_id]['childs'][leaf_id]['childs'][tpd]){ // for every todo,prog,done
+                                    delete this.projects_accesable[tpd][entity];
+                                }
+                            }
+                            delete this.projects_accesable['leaf'][leaf_id];
+                        }
+                        delete this.projects_accesable['branch'][branch_id];
+                    }
+                    delete this.projects[id];
+                    break;
+                case 'branch':
+                    let prootid = this.projects_accesable[type][id]['parent'];
+                    console.log(type);
+                    console.log(id);
+                    console.log(prootid);
+                    for(let leaf_id in this.projects[prootid]['childs'][id]['childs']){ // for every leaf
                         for(let tpd in {'todo':'','prog':'','done':''}){ // for every todo,prog,done
-                            for(let entity in this.projects[id]['childs'][branch_id]['childs'][leaf_id]['childs'][tpd]){ // for every todo,prog,done
+                            for(let entity in this.projects[prootid]['childs'][id]['childs'][leaf_id]['childs'][tpd]){ // for every todo,prog,done
                                 delete this.projects_accesable[tpd][entity];
                             }
                         }
                         delete this.projects_accesable['leaf'][leaf_id];
                     }
-                    delete this.projects_accesable['branch'][branch_id];
-                }
-                delete this.projects[id];
-                break;
-            case 'branch':
-                let prootid = this.projects_accesable[type][id]['parent'];
-                console.log(type);
-                console.log(id);
-                console.log(prootid);
-                for(let leaf_id in this.projects[prootid]['childs'][id]['childs']){ // for every leaf
+                    delete this.projects[prootid]['childs'][id];
+                    delete this.projects_accesable[type][id];
+                    break;
+                case 'leaf':
+                    let psrootid = this.projects_accesable[type][id]['parents']['root'];
+                    let psbranchid = this.projects_accesable[type][id]['parents']['branch'];
                     for(let tpd in {'todo':'','prog':'','done':''}){ // for every todo,prog,done
-                        for(let entity in this.projects[prootid]['childs'][id]['childs'][leaf_id]['childs'][tpd]){ // for every todo,prog,done
+                        for(let entity in this.projects[psrootid]['childs'][psbranchid]['childs'][id]['childs'][tpd]){ // for every todo,prog,done
                             delete this.projects_accesable[tpd][entity];
                         }
                     }
-                    delete this.projects_accesable['leaf'][leaf_id];
-                }
-                delete this.projects[prootid]['childs'][id];
-                delete this.projects_accesable[type][id];
-                break;
-            case 'leaf':
-                let psrootid = this.projects_accesable[type][id]['parents']['root'];
-                let psbranchid = this.projects_accesable[type][id]['parents']['branch'];
-                for(let tpd in {'todo':'','prog':'','done':''}){ // for every todo,prog,done
-                    for(let entity in this.projects[psrootid]['childs'][psbranchid]['childs'][id]['childs'][tpd]){ // for every todo,prog,done
-                        delete this.projects_accesable[tpd][entity];
-                    }
-                }
-                delete this.projects_accesable[type][id];
-                delete this.projects_accesable['branch'][psbranchid]['childs'][id];
-                delete this.projects[psrootid]['childs'][psbranchid]['childs'][id];
-                break;
-            case 'todo':
-            case 'prog':
-            case 'done':
-                let ps3rootid = this.projects_accesable[type][id]['parents']['root'];
-                let ps3branchid = this.projects_accesable[type][id]['parents']['branch'];
-                let ps3leafid = this.projects_accesable[type][id]['parents']['leaf'];
-                delete this.projects[ps3rootid]['childs'][ps3branchid]['childs'][ps3leafid]['childs'][type][id];
-                delete this.projects_accesable['branch'][ps3branchid]['childs'][ps3leafid]['childs'][type][id];
-                delete this.projects_accesable['leaf'][ps3leafid]['childs'][type][id];
-                delete this.projects_accesable[type][id];
-                break;
+                    delete this.projects_accesable[type][id];
+                    delete this.projects_accesable['branch'][psbranchid]['childs'][id];
+                    delete this.projects[psrootid]['childs'][psbranchid]['childs'][id];
+                    break;
+                case 'todo':
+                case 'prog':
+                case 'done':
+                    let ps3rootid = this.projects_accesable[type][id]['parents']['root'];
+                    let ps3branchid = this.projects_accesable[type][id]['parents']['branch'];
+                    let ps3leafid = this.projects_accesable[type][id]['parents']['leaf'];
+                    delete this.projects[ps3rootid]['childs'][ps3branchid]['childs'][ps3leafid]['childs'][type][id];
+                    delete this.projects_accesable['branch'][ps3branchid]['childs'][ps3leafid]['childs'][type][id];
+                    delete this.projects_accesable['leaf'][ps3leafid]['childs'][type][id];
+                    delete this.projects_accesable[type][id];
+                    break;
+            }
+            kanbanWriteBackend();
         }
-        kanbanWriteBackend();
     }
-}
 
     function addEditCard(e){
-        console.log("here adding the edit card");
-        let ak = `
-        <div class="form-group">
-            <textarea class="form-control" rows="${e.data.extra.row}" placeholder="..."></textarea>
-            <div class='input-group' id='datetimepicker1' data-td-target-input='nearest' data-td-target-toggle='nearest'>
-                <input id='clock-add-time' type='text' class='form-control datetimepicker-input' data-td-target='#datetimepicker1'/>
-                <span class='input-group-text' data-td-target='#datetimepicker1' data-td-toggle='datetimepicker'>
-                   <span class='fa-solid fa-calendar'></span>
-                </span>
-            </div>
-            <button type="submit" class="btn btn-primary w-50" id="kanban-add-button"><i class="fa-solid fa-check"></i></button>
-            <button type="submit" class="btn btn-secondary float-right w-50" id="kanban-cancel-button"><i class="fas fa-times"></i></button>
-            <script>
-                new tempusDominus.TempusDominus(document.getElementById('datetimepicker1'));
-            </script>
-        </div>`;
-        console.log(`#${e.data.extra.name}-card`);
-        console.log($(e.target.closest(`#${e.data.extra.name}-card`)));
-        console.log($(e.target.closest(`#${e.data.extra.name}-card`)).find(`#${e.data.extra.name}-body`));
+        let ak = editCard(e.data.extra.row,e.data.extra.date);
         $(e.target.closest(`#${e.data.extra.name}-card`)).find(`#${e.data.extra.name}-body`).prepend(ak);
     }
 
@@ -170,22 +191,10 @@ class KanbanDataClass{
         }
     }
 
-    var projects_selected = {};
-    var selected = {'root': '',
-                    'branch': '',
-                    'leaf': ''};
-    var selected_old = {'root': '',
-                    'branch': '',
-                    'leaf': ''};
-
     function saveCard(e){
         let txt = $(e.target.closest('.form-group')).find('.form-control').val();
         let myguid = guid();
-        let ak = `
-        <div class="card">
-            ${e.data.extra.header ?('<div class="card-header card-header-drag"></div>'):('')}
-            <div class="card-body card-saved ${e.data.extra.type}" id=${myguid} style='white-space:pre'>${txt}</div><i class="${e.data.extra.icon}"></i>
-        </div>`;
+        let ak = savedCard(e.data.extra.header,e.data.extra.type,myguid,txt,e.data.extra.icon);
         let tmp = $(e.target.closest(`#${e.data.extra.name}-card`)).find(`#${e.data.extra.name}-body`);
         switch(e.data.extra.type) {
             case 'branch':
@@ -227,10 +236,7 @@ class KanbanDataClass{
                     break;
                 for(let key in kanban_data.projects[selected['root']]["childs"]){
                     let txt =  kanban_data.projects[selected['root']]["childs"][key]['txt'];
-                    let ak = `
-                    <div class="card">
-                        <div class="card-body card-saved branch" id=${key} style='white-space:pre'>${txt}</div><i class="fa-solid fa-rectangle-xmark"></i>
-                    </div>`;
+                    let ak = savedCard(0,'branch',key,txt,"fa-solid fa-rectangle-xmark");
                     tmp = tmp + ak;
                 }
                 tmp = tmp + fuckcss;
@@ -243,10 +249,7 @@ class KanbanDataClass{
                 tmp = '';
                 for(let key in kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"]){
                     let txt =  kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"][key]['txt'];
-                    let ak = `
-                    <div class="card">
-                        <div class="card-body card-saved leaf" id=${key} style='white-space:pre'>${txt}</div><i class="fa-solid fa-rectangle-xmark"></i>
-                    </div>`;
+                    let ak = savedCard(0,'leaf',key,txt,"fa-solid fa-rectangle-xmark");
                     tmp = tmp + ak;
                 }
                 tmp = tmp + fuckcss;
@@ -262,10 +265,7 @@ class KanbanDataClass{
                 for(let tpd in {'todo':'','prog':'','done':''}){
                     for(let key in  kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][tpd]){
                         let txt = kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][tpd][key]['txt'];
-                        let ak = `<div class="card">
-                                    <div class="card-header card-header-drag"></div>
-                                    <div class="card-body card-saved ${tpd}" id=${key} style='white-space:pre'>${txt}</div><i class="fa-solid fa-square-xmark"></i>
-                                </div>`;
+                        let ak = savedCard(1,tpd,key,txt,"fa-solid fa-square-xmark");
                         tmp = tmp + ak;
                     }
                     $(`#kanban-${tpd}-card`).children(`#kanban-${tpd}-body`).html(tmp);
@@ -362,8 +362,6 @@ class KanbanDataClass{
                 projects_selected[selected['root']][2] = selected[column_type];
             break;
         }
-        console.log('selected',selected);
-        console.log('projects_selected',projects_selected);
     }
 
     /**
@@ -435,8 +433,6 @@ class KanbanDataClass{
         });
     }
 
-
-
     function kanbanReadBackend() {
 
         let entry = {
@@ -465,10 +461,7 @@ class KanbanDataClass{
                 let tmp = '';
                 for(let key in kanban_data.projects){
                     let txt =  kanban_data.projects[key]['txt'];
-                    let ak = `
-                    <div class="card">
-                        <div class="card-body card-saved root" id=${key} style='white-space:pre'>${txt}</div><i class="fa-solid fa-rectangle-xmark"></i>
-                    </div>`;
+                    let ak = savedCard(0,'root',key,txt,"fa-solid fa-rectangle-xmark");
                     tmp = tmp + ak;
                 }
                 tmp = tmp + fuckcss;
@@ -550,14 +543,14 @@ class KanbanDataClass{
 
     var kanban_data = new KanbanDataClass({}, {root:{},branch:{},leaf:{},todo:{},prog:{},done:{}});
 
-    $('#kanban-todo-card').children('.card-header').children('.card-tools').on("click",('.kanban-plus'),{ extra : {row:4,name:'kanban-todo'}},addEditCard);
+    $('#kanban-todo-card').children('.card-header').children('.card-tools').on("click",('.kanban-plus'),{ extra : {row:4,name:'kanban-todo',date:1}},addEditCard);
     $('#kanban-todo-body').on("click",('#kanban-add-button'),{ extra : {name:'kanban-todo',icon:"fa-solid fa-square-xmark",header:1,type:'todo'}},saveCard);
     $('#kanban-todo-body').on("click",('#kanban-cancel-button'),removeCard);
     $('.card-body, .fa-square-xmark').on("click",('.fa-square-xmark'),removeAddedCard);
 
-    $('#kanban-projects-card,#kanban-projects-root-button  ').on("click",('#kanban-projects-root-button  '),{ extra : {row:1,name:'kanban-projects'}},addEditCard);
-    $('#kanban-projects-card,#kanban-projects-branch-button').on("click",('#kanban-projects-branch-button'),{ extra : {row:1,name:'kanban-projects'}},addEditCard);
-    $('#kanban-projects-card,#kanban-projects-leaf-button  ').on("click",('#kanban-projects-leaf-button  '),{ extra : {row:1,name:'kanban-projects'}},addEditCard);
+    $('#kanban-projects-card,#kanban-projects-root-button  ').on("click",('#kanban-projects-root-button  '),{ extra : {row:1,name:'kanban-projects',date:0}},addEditCard);
+    $('#kanban-projects-card,#kanban-projects-branch-button').on("click",('#kanban-projects-branch-button'),{ extra : {row:1,name:'kanban-projects',date:0}},addEditCard);
+    $('#kanban-projects-card,#kanban-projects-leaf-button  ').on("click",('#kanban-projects-leaf-button  '),{ extra : {row:1,name:'kanban-projects',date:0}},addEditCard);
     $('.kanban-projects-root  ').on("click",('#kanban-add-button'),{extra : {name:'kanban-projects',icon:"fa-solid fa-rectangle-xmark",header:0,type:'root'}},saveCard);
     $('.kanban-projects-branch').on("click",('#kanban-add-button'),{extra : {name:'kanban-projects',icon:"fa-solid fa-rectangle-xmark",header:0,type:'branch'}},saveCard);
     $('.kanban-projects-leaf  ').on("click",('#kanban-add-button'),{extra : {name:'kanban-projects',icon:"fa-solid fa-rectangle-xmark",header:0,type:'leaf'}},saveCard);
@@ -584,140 +577,118 @@ class KanbanDataClass{
     });
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
     // <src="../plugins/moment/moment.min.js">
-/* initialize the external events
- -----------------------------------------------------------------*/
-function ini_events(ele) {
-    ele.each(function () {
+    /* initialize the external events
+    -----------------------------------------------------------------*/
+    function ini_events(ele) {
+        ele.each(function () {
+            // create an Event Object (https://fullcalendar.io/docs/event-object)
+            // it doesn't need to have a start or end
+            var eventObject = {
+                title: $.trim($(this).text()) // use the element's text as the event title
+            }
+            // store the Event Object in the DOM element so we can get to it later
+            $(this).data('eventObject', eventObject)
+            // make the event draggable using jQuery UI
+            $(this).draggable({
+                zIndex        : 1070,
+                revert        : true, // will cause the event to go back to its
+                revertDuration: 0  //  original position after the drag
+            })
+        })
+    }
 
-      // create an Event Object (https://fullcalendar.io/docs/event-object)
-      // it doesn't need to have a start or end
-      var eventObject = {
-        title: $.trim($(this).text()) // use the element's text as the event title
-      }
+    ini_events($('#external-events div.external-event'))
 
-      // store the Event Object in the DOM element so we can get to it later
-      $(this).data('eventObject', eventObject)
+    /* initialize the calendar
+    -----------------------------------------------------------------*/
+    //Date for the calendar events (dummy data)
+    var date = new Date()
+    var d    = date.getDate(),
+        m    = date.getMonth(),
+        y    = date.getFullYear()
 
-      // make the event draggable using jQuery UI
-      $(this).draggable({
-        zIndex        : 1070,
-        revert        : true, // will cause the event to go back to its
-        revertDuration: 0  //  original position after the drag
-      })
+    var Calendar = FullCalendar.Calendar;
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new Calendar(calendarEl, {
+        headerToolbar: {
+            left  : 'prev,next today',
+            center: 'title',
+            right : 'dayGridMonth,timeGridWeek,timeGridDay,listDay,listWeek,listMonth'
+        },
+        views: {
+            listDay: { buttonText: 'list day' },
+            listWeek: { buttonText: 'list week' },
+            listMonth: { buttonText: 'list month' }
+        },
+        themeSystem: 'bootstrap',
+        firstDay: 1,
+        //Random default events
+        events: [
+        {
+            title          : 'All Day Event',
+            start          : new Date(y, m, 1),
+            backgroundColor: '#f56954', //red
+            borderColor    : '#f56954', //red
+            allDay         : true
+        },
+        {
+            title          : 'Long Event',
+            start          : new Date(y, m, d - 5),
+            end            : new Date(y, m, d - 2),
+            backgroundColor: '#f39c12', //yellow
+            borderColor    : '#f39c12' //yellow
+        },
+        {
+            title          : 'Meeting',
+            start          : new Date(y, m, d, 10, 30),
+            allDay         : false,
+            backgroundColor: '#0073b7', //Blue
+            borderColor    : '#0073b7' //Blue
+        },
+        {
+            title          : 'Lunch',
+            start          : new Date(y, m, d, 12, 0),
+            end            : new Date(y, m, d, 14, 0),
+            allDay         : false,
+            backgroundColor: '#00c0ef', //Info (aqua)
+            borderColor    : '#00c0ef' //Info (aqua)
+        },
+        {
+            title          : 'Birthday Party',
+            start          : new Date(y, m, d + 1, 19, 0),
+            end            : new Date(y, m, d + 1, 22, 30),
+            allDay         : false,
+            backgroundColor: '#00a65a', //Success (green)
+            borderColor    : '#00a65a' //Success (green)
+        },
+        {
+            title          : 'Click for Google',
+            start          : new Date(y, m, 28),
+            end            : new Date(y, m, 29),
+            url            : 'https://www.google.com/',
+            backgroundColor: '#3c8dbc', //Primary (light-blue)
+            borderColor    : '#3c8dbc' //Primary (light-blue)
+        }
+        ],
+        editable  : false,
+        droppable : false
+    });
 
-    })
-  }
+    var myTimeout;
+    setTimeout(initialCalendarRender, 1000);
+    setTimeout(initialCalendarRender, 2000);
+    function initialCalendarRender(){
+        // calendar is distorted at the beginning. This is an official bug.
+        // Fix it by rendering it few times at the beginning.
+        calendar.render();
+    }
 
-  ini_events($('#external-events div.external-event'))
-
-  /* initialize the calendar
-   -----------------------------------------------------------------*/
-  //Date for the calendar events (dummy data)
-  var date = new Date()
-  var d    = date.getDate(),
-      m    = date.getMonth(),
-      y    = date.getFullYear()
-
-  var Calendar = FullCalendar.Calendar;
-  var calendarEl = document.getElementById('calendar');
-
-  // initialize the external events
-  // -----------------------------------------------------------------
-
-
-  var calendar = new Calendar(calendarEl, {
-    headerToolbar: {
-      left  : 'prev,next today',
-      center: 'title',
-      right : 'dayGridMonth,timeGridWeek,timeGridDay,listDay,listWeek,listMonth'
-    },
-    views: {
-      listDay: { buttonText: 'list day' },
-      listWeek: { buttonText: 'list week' },
-      listMonth: { buttonText: 'list month' }
-    },
-    themeSystem: 'bootstrap',
-    firstDay: 1,
-    //Random default events
-    events: [
-      {
-        title          : 'All Day Event',
-        start          : new Date(y, m, 1),
-        backgroundColor: '#f56954', //red
-        borderColor    : '#f56954', //red
-        allDay         : true
-      },
-      {
-        title          : 'Long Event',
-        start          : new Date(y, m, d - 5),
-        end            : new Date(y, m, d - 2),
-        backgroundColor: '#f39c12', //yellow
-        borderColor    : '#f39c12' //yellow
-      },
-      {
-        title          : 'Meeting',
-        start          : new Date(y, m, d, 10, 30),
-        allDay         : false,
-        backgroundColor: '#0073b7', //Blue
-        borderColor    : '#0073b7' //Blue
-      },
-      {
-        title          : 'Lunch',
-        start          : new Date(y, m, d, 12, 0),
-        end            : new Date(y, m, d, 14, 0),
-        allDay         : false,
-        backgroundColor: '#00c0ef', //Info (aqua)
-        borderColor    : '#00c0ef' //Info (aqua)
-      },
-      {
-        title          : 'Birthday Party',
-        start          : new Date(y, m, d + 1, 19, 0),
-        end            : new Date(y, m, d + 1, 22, 30),
-        allDay         : false,
-        backgroundColor: '#00a65a', //Success (green)
-        borderColor    : '#00a65a' //Success (green)
-      },
-      {
-        title          : 'Click for Google',
-        start          : new Date(y, m, 28),
-        end            : new Date(y, m, 29),
-        url            : 'https://www.google.com/',
-        backgroundColor: '#3c8dbc', //Primary (light-blue)
-        borderColor    : '#3c8dbc' //Primary (light-blue)
-      }
-    ],
-    editable  : false,
-    droppable : false
-  });
-
-  var myTimeout;
-  setTimeout(initialCalendarRender, 1000);
-  setTimeout(initialCalendarRender, 2000);
-  function initialCalendarRender(){
-    // calendar is distorted at the beginning. This is an official bug.
-    // Fix it by rendering it few times at the beginning.
-    calendar.render();
-  }
-
-  $('#sidebar-toggle-button, #pills-calendar-view-tab').on( "click", function() {
-    // Sidebar distorts the calendar. We have to re-render it.
-    // Bootstrap 5 tabs distorts the calendar. We have to re-render it.
-    // Movement of sidebar is slower than the render speed. Which causes an incorrect render.
-    // Hence, call the render function after sidebar is fully extended. Which means waiting a little bit before requesting render.
-    myTimeout = setTimeout(function(){calendar.updateSize();clearTimeout(myTimeout);}, 100);
-  });
+    $('#sidebar-toggle-button, #pills-calendar-view-tab').on( "click", function() {
+        // Sidebar distorts the calendar. We have to re-render it.
+        // Bootstrap 5 tabs distorts the calendar. We have to re-render it.
+        // Movement of sidebar is slower than the render speed. Which causes an incorrect render.
+        // Hence, call the render function after sidebar is fully extended. Which means waiting a little bit before requesting render.
+        myTimeout = setTimeout(function(){calendar.updateSize();clearTimeout(myTimeout);}, 100);
+    });
 })
