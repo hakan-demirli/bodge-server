@@ -1,3 +1,9 @@
+.fc .fc-list-sticky .fc-list-day > * {
+	background: var(--fc-page-bg-color, #4b6991);
+}
+:root {
+	--fc-list-event-hover-bg-color: #46535e;
+}
 .calendar-card{
     width: 60%;
 }
