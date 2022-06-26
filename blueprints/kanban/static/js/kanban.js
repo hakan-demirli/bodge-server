@@ -10,9 +10,9 @@ $(function () {
 
     function savedCard(header,type,guid,txt,icon){
         let ak = `
-        <div class="card saved-card">
+        <div class="card card-saved">
             ${header ?('<div class="card-header card-header-drag"></div>'):('')}
-            <div class="card-body card-saved ${type}" id=${guid} style='white-space:pre'>${txt}</div>
+            <div class="card-body card-saved-body ${type}" id=${guid} style='white-space:pre'>${txt}</div>
             <a href='#'><i class="${icon}"></i></a>
         </div>`;
         return ak;
@@ -147,46 +147,35 @@ $(function () {
     }
 
     function removeAddedCard(e) {
-        let id = $(e.target).parent('.card').children('.card-saved').attr("id");
-        let column_type_todo = $(e.target).parent('.card').children('.card-saved').hasClass('todo');
-        let column_type_prog = $(e.target).parent('.card').children('.card-saved').hasClass('prog');
-        let column_type_done = $(e.target).parent('.card').children('.card-saved').hasClass('done');
+        let body = $(e.target).closest('.card-saved').children('.card-saved-body');
+        let id = body.attr("id");
         e.target.closest('.card').remove();
-        if(column_type_todo){
-            kanban_data.remove(id,'todo');
-        }
-        if(column_type_prog){
-            kanban_data.remove(id,'prog');
-        }
-        if(column_type_done){
-            kanban_data.remove(id,'done');
-        }
+        if(body.hasClass('todo')){kanban_data.remove(id,'todo');}
+        if(body.hasClass('prog')){kanban_data.remove(id,'prog');}
+        if(body.hasClass('done')){kanban_data.remove(id,'done');}
     }
 
     function removeAddedProjectNode(e) {
-        let id = $(e.target).parent('.card').children('.card-saved').attr("id");
-        let column_type_root = $(e.target).parent('.card').children('.card-saved').hasClass('root');
-        let column_type_branch = $(e.target).parent('.card').children('.card-saved').hasClass('branch');
-        let column_type_leaf = $(e.target).parent('.card').children('.card-saved').hasClass('leaf');
+        let body = $(e.target).closest('.card-saved').children('.card-saved-body');
+        let id = body.attr("id");
         if(id == selected['root'] || id == selected['branch'] || id == selected['leaf']){
             toastr.warning("you can't delete selected items");
         }else{
             if (confirm('Delete? U sure?')){
                 e.target.closest('.card').remove();
-                if(column_type_root){
+                if(body.hasClass('root')){
                     delete projects_selected[id];
                     kanban_data.remove(id,'root');
                 }
-                if(column_type_branch){
+                if(body.hasClass('branch')){
                     projects_selected[kanban_data.projects_accesable['branch'][id]['parent']][1] = '';
                     projects_selected[kanban_data.projects_accesable['branch'][id]['parent']][2] = '';
                     kanban_data.remove(id,'branch');
                 }
-                if(column_type_leaf){
+                if(body.hasClass('leaf')){
                     projects_selected[kanban_data.projects_accesable['leaf'][id]['parents']['root']][2] = '';
                     kanban_data.remove(id,'leaf');
                 }
-                kanbanWriteBackend();
             }
         }
     }
@@ -279,35 +268,21 @@ $(function () {
             $(`.kanban-projects-${column_type}`).children('#kanban-projects-body').children(`.card`).children(`#${selected_old[column_type]}`).toggleClass('bg-info');
         if( selected['root'] == '')
             return;
-
+        let root_sel   = $(`.kanban-projects-root`).children('#kanban-projects-body').children(`.card`).children(`#${selected['root']}`);
+        let branch_sel = $(`.kanban-projects-branch`).children('#kanban-projects-body').children(`.card`).children(`#${selected['branch']}`);
+        let leaf_sel   = $(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${selected['leaf']}`);
         switch(column_type) {
             case 'root':
-                if($(`.kanban-projects-root`).children('#kanban-projects-body').children(`.card`).children(`#${selected['root']}`).hasClass('bg-info')){
-                    //console.log("nope")
-                }else{
-                    $(`.kanban-projects-root`).children('#kanban-projects-body').children(`.card`).children(`#${selected['root']}`).toggleClass('bg-info');
-                }
-                if (selected['branch'] != '')
-                    $(`.kanban-projects-branch`).children('#kanban-projects-body').children(`.card`).children(`#${selected['branch']}`).toggleClass('bg-info');
-                if (selected['leaf'] != '')
-                    $(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${selected['leaf']}`).toggleClass('bg-info');
-
+                if(!root_sel.hasClass('bg-info')){root_sel.toggleClass('bg-info');}
+                if(selected['branch'] != ''){branch_sel.toggleClass('bg-info');}
+                if(selected['leaf'] != ''){leaf_sel.toggleClass('bg-info');}
             break;
             case 'branch':
-                if($(`.kanban-projects-branch`).children('#kanban-projects-body').children(`.card`).children(`#${selected['branch']}`).hasClass('bg-info')){
-                    //console.log("nope")
-                }else{
-                    $(`.kanban-projects-branch`).children('#kanban-projects-body').children(`.card`).children(`#${selected['branch']}`).toggleClass('bg-info');
-                }
-                if (selected['leaf'] != '')
-                    $(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${selected['leaf']}`).toggleClass('bg-info');
+                if(!branch_sel.hasClass('bg-info')){branch_sel.toggleClass('bg-info');}
+                if (selected['leaf'] != ''){leaf_sel.toggleClass('bg-info');}
             break;
             case 'leaf':
-                if($(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${selected['leaf']}`).hasClass('bg-info')){
-                    //console.log("nope");
-                }else{
-                    $(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${selected['leaf']}`).toggleClass('bg-info');
-                }
+                if(!leaf_sel.hasClass('bg-info')){leaf_sel.toggleClass('bg-info');}
             break;
         }
     }
