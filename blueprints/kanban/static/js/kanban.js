@@ -642,6 +642,7 @@ function ini_events(ele) {
       listMonth: { buttonText: 'list month' }
     },
     themeSystem: 'bootstrap',
+    firstDay: 1,
     //Random default events
     events: [
       {
@@ -694,6 +695,16 @@ function ini_events(ele) {
     droppable : false
   });
 
-  calendar.render();
 
+  var myTimeout = setTimeout(myGreeting, 1000);
+  function myGreeting(){
+    calendar.render();
+    clearTimeout(myTimeout);
+  }
+  $('#sidebar-toggle-button').on( "click", function() {
+    // sidebar distorts the calendar. We have to re-render it.
+    // Movement of sidebar is slower than the render speed. Which causes an incorrect render.
+    // Hence, call the render function after sidebar is fully extended. Which means waiting a little bit before render request.
+    myTimeout = setTimeout(myGreeting, 100);
+  });
 })
