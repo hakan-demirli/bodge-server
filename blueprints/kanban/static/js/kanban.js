@@ -259,29 +259,32 @@ $(function () {
     }
 
     function selectCardFrontend(column_type){
-        let root_sel;
-        let branch_sel;
-        let leaf_sel;
+        let root_sel, branch_sel, leaf_sel;
+        let root_exst, branch_exst, leaf_exst = 0;
         if(selected_old[column_type] != '')
             $(`.kanban-projects-${column_type}`).children('#kanban-projects-body').children(`.card`).children(`#${selected_old[column_type]}`).toggleClass('bg-info');
         if(selected['root'] != ''){
             root_sel = $(`.kanban-projects-root`).children('#kanban-projects-body').children(`.card`).children(`#${selected['root']}`);
+            root_exst = 1;
+            if(selected['branch'] != ''){
+                branch_sel = $(`.kanban-projects-branch`).children('#kanban-projects-body').children(`.card`).children(`#${selected['branch']}`);
+                branch_exst = 1;
+                if(selected['leaf'] != ''){
+                    leaf_sel = $(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${selected['leaf']}`);
+                    leaf_exst = 1;
+                }
+            }
         }else{return;}
-        if(selected['branch'] != ''){
-            branch_sel = $(`.kanban-projects-branch`).children('#kanban-projects-body').children(`.card`).children(`#${selected['branch']}`);
-        }
-        if(selected['leaf'] != ''){
-            leaf_sel   = $(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${selected['leaf']}`);
-        }
+
         switch(column_type) {
             case 'root':
                 if(!root_sel.hasClass('bg-info')){root_sel.toggleClass('bg-info');}
-                branch_sel.toggleClass('bg-info');
-                leaf_sel.toggleClass('bg-info');
+                if(branch_exst){branch_sel.toggleClass('bg-info');}
+                if(leaf_exst){leaf_sel.toggleClass('bg-info');}
             break;
             case 'branch':
                 if(!branch_sel.hasClass('bg-info')){branch_sel.toggleClass('bg-info');}
-                leaf_sel.toggleClass('bg-info');
+                if(leaf_exst){leaf_sel.toggleClass('bg-info');}
             break;
             case 'leaf':
                 if(!leaf_sel.hasClass('bg-info')){leaf_sel.toggleClass('bg-info');}
@@ -679,6 +682,5 @@ $(function () {
         // Hence, call the render function after sidebar is fully extended. Which means waiting a little bit before requesting render.
         myTimeout = setTimeout(function(){calendar.updateSize();clearTimeout(myTimeout);}, 100);
     });
-
-
+    console.log(new Date(date.getFullYear(), date.getMonth(), date.getDate(), 14, 0));
 })
