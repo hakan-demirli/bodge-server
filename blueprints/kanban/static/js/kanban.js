@@ -94,7 +94,8 @@ $(function () {
                     this.projects_accessible[type][id] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id];
                     break;
             }
-            //kanbanWriteBackend();
+            kanbanWriteBackend();
+            createEventsFromKanban();
         }
         remove(id,type){
             switch(type) {
@@ -121,6 +122,7 @@ $(function () {
             }
             this.recreateProjectsAccessible();
             kanbanWriteBackend();
+            createEventsFromKanban();
         }
     }
 
@@ -579,19 +581,19 @@ $(function () {
         })
     }
 
-    ini_events($('#external-events div.external-event'))
-
-    /* initialize the calendar
-    -----------------------------------------------------------------*/
-    //Date for the calendar events (dummy data)
-    var date = new Date()
-    var d    = date.getDate(),
-        m    = date.getMonth(),
-        y    = date.getFullYear()
+    ini_events($('#external-events div.external-event'));
 
     var Calendar = FullCalendar.Calendar;
     var calendarEl = document.getElementById('calendar');
     var calendar = new Calendar(calendarEl, {
+        eventClick: function(info) {
+            let itm = kanban_data.projects_accessible[info.event.groupId][info.event.id];
+            for(let tpd in itm['parents']){
+                selectCardBackend(tpd,itm['parents'][tpd]);
+                recreateRightColumns(tpd);
+                selectCardFrontend(tpd);
+            }
+        },
         headerToolbar: {
             left  : 'prev,next today',
             center: 'title',
@@ -604,54 +606,7 @@ $(function () {
         },
         themeSystem: 'bootstrap',
         firstDay: 1,
-        //Random default events
-        events: [
-        {
-            title          : 'All Day Event',
-            start          : new Date(y, m, 1),
-            backgroundColor: '#f56000', //red
-            borderColor    : '#ffffff', //red
-            allDay         : true
-        },
-        {
-            title          : 'Long Event',
-            start          : new Date(y, m, d - 5),
-            end            : new Date(y, m, d - 2),
-            backgroundColor: '#f39c12', //yellow
-            borderColor    : '#f39c12' //yellow
-        },
-        {
-            title          : 'Meeting',
-            start          : new Date(y, m, d, 10, 30),
-            allDay         : false,
-            backgroundColor: '#0073b7', //Blue
-            borderColor    : '#0073b7' //Blue
-        },
-        {
-            title          : 'Lunch',
-            start          : new Date(y, m, d, 12, 0),
-            end            : new Date(y, m, d, 14, 0),
-            allDay         : false,
-            backgroundColor: '#00c0ef', //Info (aqua)
-            borderColor    : '#00c0ef' //Info (aqua)
-        },
-        {
-            title          : 'Birthday Party',
-            start          : new Date(y, m, d + 1, 19, 0),
-            end            : new Date(y, m, d + 1, 22, 30),
-            allDay         : false,
-            backgroundColor: '#00a65a', //Success (green)
-            borderColor    : '#00a65a' //Success (green)
-        },
-        {
-            title          : 'Click for Google',
-            start          : new Date(y, m, 28),
-            end            : new Date(y, m, 29),
-            url            : 'https://www.google.com/',
-            backgroundColor: '#3c8dbc', //Primary (light-blue)
-            borderColor    : '#3c8dbc' //Primary (light-blue)
-        }
-        ],
+        events: [],
         editable  : false,
         droppable : false
     });
@@ -662,17 +617,8 @@ $(function () {
     function initialCalendarRender(){
         // calendar is distorted at the beginning. This is an official bug.
         // Fix it by rendering it few times at the beginning.
+        createEventsFromKanban();
         calendar.render();
-        let ssss =         {
-            title          : 'tingting',
-            start          : new Date(y, m, d, 15, 30),
-            allDay         : false,
-            backgroundColor: '#ff73b7',
-            borderColor    : '#ff7fff'
-        };
-
-        calendar.addEvent(ssss )
-
     }
 
     $('#sidebar-toggle-button, #pills-calendar-view-tab').on( "click", function() {
@@ -682,5 +628,25 @@ $(function () {
         // Hence, call the render function after sidebar is fully extended. Which means waiting a little bit before requesting render.
         myTimeout = setTimeout(function(){calendar.updateSize();clearTimeout(myTimeout);}, 100);
     });
-    console.log(new Date(date.getFullYear(), date.getMonth(), date.getDate(), 14, 0));
+
+    function createEventsFromKanban(){
+        calendar.removeAllEvents();
+        let types = {todo:'', prog:''};
+        for(let type in types){
+            for(let event_id in kanban_data.projects_accessible[type]){
+                let event_raw = kanban_data.projects_accessible[type][event_id];
+                let event_calendar =         {
+                    id             : event_id,
+                    title          : event_raw['title'],
+                    groupId        : type,
+                    start          : new Date(event_raw['time']),
+                    end            : new Date((new Date(event_raw['time'])).getTime() + 1000),
+                    allDay         : false,
+                    backgroundColor: '#ff73b7',
+                    borderColor    : '#ff7fff'
+                };
+                calendar.addEvent(event_calendar);
+            }
+        }
+    }
 })
