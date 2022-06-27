@@ -3,15 +3,18 @@ $(function () {
 'use strict'
 
     var fuckcss = `<div class="form-group" style="  visibility: hidden; width: 9%;">
-                    <textarea class="form-control" rows="1" placeholder="Enter a note"></textarea>
+                    <textarea class="form-control" rows="1" placeholder=""></textarea>
                     <button type="submit" class="btn btn-primary w-50" id="kanban-add-button"><i class="fa-solid fa-check"></i></button>
                     <button type="submit" class="btn btn-secondary float-right w-50" id="kanban-cancel-button"><i class="fas fa-times"></i></button>
-                </div>`;
+                </div>`; // Size of the cards expand/shrink if smth added/removed. Hence, add an invisible card to prevent.
 
-    function savedCard(header,type,guid,txt,icon){
+    function savedCard(header,type,guid,txt,icon,title,time){
         let ak = `
         <div class="card card-saved">
-            ${header ?('<div class="card-header card-header-drag"></div>'):('')}
+            ${header ?(`<div class="card-header card-header-drag">
+                            <div id="title" style="float: left;">${title}</div>
+                            <div id="time" style="float: right;">${time}</div>
+                        </div>`):('')}
             <div class="card-body card-saved-body ${type}" id=${guid}>${txt}</div>
             <a href='#'><i class="${icon}"></i></a>
         </div>`;
@@ -21,7 +24,8 @@ $(function () {
     function editCard(row,date){
         let ak = `
         <div class="form-group">
-            <textarea class="form-control" rows="${row}" placeholder="..."></textarea>
+            ${date ?(`<input type="text" placeholder="Summary" class="form-control" id="title">`):('')}
+            <textarea class="form-control" rows="${row}" placeholder="..." id="content"></textarea>
             ${date ?(`
                     <div class='input-group' id='datetimepicker1' data-td-target-input='nearest' data-td-target-toggle='nearest'>
                         <input id='clock-add-time' type='text' class='form-control datetimepicker-input' data-td-target='#datetimepicker1'/>
@@ -52,7 +56,7 @@ $(function () {
             this.projects = proj;
             this.projects_accesable = proj_ac;
         }
-        add(id,type,txt){
+        add(id,type,txt,title,time){
             switch(type) {
                 case 'root':
                     this.projects[id] = {txt:txt,childs:{}};
@@ -69,13 +73,13 @@ $(function () {
                 case 'todo':
                 case 'prog':
                 case 'done':
-                    this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id] = {parents:{branch:selected['branch'],root:selected['root'],leaf:selected['leaf']},txt:txt};
+                    this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id] = {parents:{branch:selected['branch'],root:selected['root'],leaf:selected['leaf']},txt:txt,title:title,time:time};
                     this.projects_accesable['branch'][selected['branch']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'];
                     this.projects_accesable['leaf'][selected['leaf']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'];
                     this.projects_accesable[type][id] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id];
                     break;
             }
-            kanbanWriteBackend();
+            //kanbanWriteBackend();
         }
         remove(id,type){
             switch(type) {
@@ -181,11 +185,12 @@ $(function () {
     }
 
     function saveCard(e){
-        let txt = $(e.target.closest('.form-group')).find('.form-control').val();
+        let txt = $(e.target.closest('.form-group')).children('#content').val();
+        let title = $(e.target.closest('.form-group')).children('#title').val();
+        let time = $(e.target.closest('.form-group')).children('.input-group').children('#clock-add-time').val();
         let myguid = guid();
-        let ak = savedCard(e.data.extra.header,e.data.extra.type,myguid,txt,e.data.extra.icon);
+        let ak = savedCard(e.data.extra.header,e.data.extra.type,myguid,txt,e.data.extra.icon,title,time);
         let tmp = $(e.target.closest(`#${e.data.extra.name}-card`)).find(`#${e.data.extra.name}-body`);
-        console.log($('#clock-add-time').val());
         switch(e.data.extra.type) {
             case 'branch':
                 if(selected['root'] == ''){
@@ -210,7 +215,7 @@ $(function () {
         }
         tmp.prepend(ak);
         removeCard(e);
-        kanban_data.add(myguid,e.data.extra.type,txt);
+        kanban_data.add(myguid,e.data.extra.type,txt,title,time);
         selectCardBackend(e.data.extra.type,myguid);
         recreateRightColumns(e.data.extra.type);
         selectCardFrontend(e.data.extra.type);
@@ -226,7 +231,9 @@ $(function () {
                     break;
                 for(let key in kanban_data.projects[selected['root']]["childs"]){
                     let txt =  kanban_data.projects[selected['root']]["childs"][key]['txt'];
-                    let ak = savedCard(0,'branch',key,txt,"fa-solid fa-rectangle-xmark");
+                    let title =  kanban_data.projects[selected['root']]["childs"][key]['title'];
+                    let time =  kanban_data.projects[selected['root']]["childs"][key]['time'];
+                    let ak = savedCard(0,'branch',key,txt,"fa-solid fa-rectangle-xmark",title,time);
                     tmp = tmp + ak;
                 }
                 tmp = tmp + fuckcss;
@@ -239,7 +246,9 @@ $(function () {
                 tmp = '';
                 for(let key in kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"]){
                     let txt =  kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"][key]['txt'];
-                    let ak = savedCard(0,'leaf',key,txt,"fa-solid fa-rectangle-xmark");
+                    let title =  kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"][key]['title'];
+                    let time =  kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"][key]['time'];
+                    let ak = savedCard(0,'leaf',key,txt,"fa-solid fa-rectangle-xmark",title,time);
                     tmp = tmp + ak;
                 }
                 tmp = tmp + fuckcss;
@@ -255,7 +264,9 @@ $(function () {
                 for(let tpd in {'todo':'','prog':'','done':''}){
                     for(let key in  kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][tpd]){
                         let txt = kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][tpd][key]['txt'];
-                        let ak = savedCard(1,tpd,key,txt,"fa-solid fa-square-xmark");
+                        let title = kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][tpd][key]['title'];
+                        let time = kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][tpd][key]['time'];
+                        let ak = savedCard(1,tpd,key,txt,"fa-solid fa-square-xmark",title,time);
                         tmp = tmp + ak;
                     }
                     $(`#kanban-${tpd}-card`).children(`#kanban-${tpd}-body`).html(tmp);
@@ -444,7 +455,9 @@ $(function () {
                 let tmp = '';
                 for(let key in kanban_data.projects){
                     let txt =  kanban_data.projects[key]['txt'];
-                    let ak = savedCard(0,'root',key,txt,"fa-solid fa-rectangle-xmark");
+                    let title =  kanban_data.projects[key]['title'];
+                    let time =  kanban_data.projects[key]['time'];
+                    let ak = savedCard(0,'root',key,txt,"fa-solid fa-rectangle-xmark",title,time);
                     tmp = tmp + ak;
                 }
                 tmp = tmp + fuckcss;
@@ -466,50 +479,50 @@ $(function () {
 
         },
         receive: function( e, ui ) {
-            let dropped_card = ui.item.find(".card-saved-body");
-            let card_id = dropped_card.attr('id');
+            let dropped_card_body = ui.item.find(".card-saved-body");
+            let card_id = dropped_card_body.attr('id');
             let body_name = e.target.id;
-            console.log(body_name);
-            console.log(card_id);
-            console.log(dropped_card.text());
+            let txt = dropped_card_body.text();
+            let title = $(ui.item[0]).children('.card-header').children('#title').text();
+            let time = $(ui.item[0]).children('.card-header').children('#time').text();
             switch(body_name){
                 case 'kanban-todo-body':
-                    kanban_data.add(card_id,'todo',dropped_card.text());
-                    if(dropped_card.hasClass("prog")){
+                    kanban_data.add(card_id,'todo',txt,title,time);
+                    if(dropped_card_body.hasClass("prog")){
                         kanban_data.remove(card_id,'prog');
-                        dropped_card.toggleClass('prog');
-                        dropped_card.toggleClass('todo');
+                        dropped_card_body.toggleClass('prog');
+                        dropped_card_body.toggleClass('todo');
                     }
-                    if(dropped_card.hasClass("done")){
+                    if(dropped_card_body.hasClass("done")){
                         kanban_data.remove(card_id,'done');
-                        dropped_card.toggleClass('done');
-                        dropped_card.toggleClass('todo');
+                        dropped_card_body.toggleClass('done');
+                        dropped_card_body.toggleClass('todo');
                     }
                 break;
                 case 'kanban-prog-body':
-                    kanban_data.add(card_id,'prog',dropped_card.text());
-                    if(dropped_card.hasClass("done")){
+                    kanban_data.add(card_id,'prog',txt,title,time);
+                    if(dropped_card_body.hasClass("done")){
                         kanban_data.remove(card_id,'done');
-                        dropped_card.toggleClass('done');
-                        dropped_card.toggleClass('prog');
+                        dropped_card_body.toggleClass('done');
+                        dropped_card_body.toggleClass('prog');
                     }
-                    if(dropped_card.hasClass("todo")){
+                    if(dropped_card_body.hasClass("todo")){
                         kanban_data.remove(card_id,'todo');
-                        dropped_card.toggleClass('todo');
-                        dropped_card.toggleClass('prog');
+                        dropped_card_body.toggleClass('todo');
+                        dropped_card_body.toggleClass('prog');
                     }
                 break;
                 case 'kanban-done-body':
-                    kanban_data.add(card_id,'done',dropped_card.text());
-                    if(dropped_card.hasClass("prog")){
+                    kanban_data.add(card_id,'done',txt,title,time);
+                    if(dropped_card_body.hasClass("prog")){
                         kanban_data.remove(card_id,'prog');
-                        dropped_card.toggleClass('prog');
-                        dropped_card.toggleClass('done');
+                        dropped_card_body.toggleClass('prog');
+                        dropped_card_body.toggleClass('done');
                     }
-                    if(dropped_card.hasClass("todo")){
+                    if(dropped_card_body.hasClass("todo")){
                         kanban_data.remove(card_id,'todo');
-                        dropped_card.toggleClass('todo');
-                        dropped_card.toggleClass('done');
+                        dropped_card_body.toggleClass('todo');
+                        dropped_card_body.toggleClass('done');
                     }
                 break;
             }
@@ -611,8 +624,8 @@ $(function () {
         {
             title          : 'All Day Event',
             start          : new Date(y, m, 1),
-            backgroundColor: '#f56954', //red
-            borderColor    : '#f56954', //red
+            backgroundColor: '#f56000', //red
+            borderColor    : '#ffffff', //red
             allDay         : true
         },
         {
