@@ -588,10 +588,12 @@ $(function () {
     var calendar = new Calendar(calendarEl, {
         eventClick: function(info) {
             let itm = kanban_data.projects_accessible[info.event.groupId][info.event.id];
-            for(let tpd in itm['parents']){
-                selectCardBackend(tpd,itm['parents'][tpd]);
-                recreateRightColumns(tpd);
-                selectCardFrontend(tpd);
+            let types = {root:'', branch:'', leaf:''}; //order matters
+            for(let type in types){
+                console.log(type);
+                selectCardBackend(type,itm['parents'][type]);
+                recreateRightColumns(type);
+                selectCardFrontend(type);
             }
         },
         headerToolbar: {
