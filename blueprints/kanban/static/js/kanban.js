@@ -54,7 +54,22 @@ $(function () {
     class KanbanDataClass{
         constructor(proj,proj_ac) {
             this.projects = proj;
-            this.projects_accesable = proj_ac;
+            this.projects_accessible = proj_ac;
+        }
+        recreateProjectsAccessible(){
+            for(let root_id in this.projects){ // for every root
+                for(let branch_id in this.projects[root_id]['childs']){ // for every branch of the root
+                    this.projects_accessible['branch'][branch_id] = this.projects[root_id]['childs'][branch_id];
+                    for(let leaf_id in this.projects[root_id]['childs'][branch_id]['childs']){ // for every leaf of the branch
+                        this.projects_accessible['leaf'][leaf_id] = this.projects[root_id]['childs'][branch_id]['childs'][leaf_id];
+                        for(let tpd in this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs']){ // for every todo/prog/done of the leaf
+                            for(let tpd_id in this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs'][tpd]){ // for every id in the todo/prog/done
+                                this.projects_accessible[tpd][tpd_id] = this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs'][tpd][tpd_id];
+                            }
+                        }
+                    }
+                }
+            }
         }
         add(id,type,txt,title,time){
             switch(type) {
@@ -63,20 +78,20 @@ $(function () {
                     break;
                 case 'branch':
                     this.projects[selected['root']]['childs'][id] = {parent:selected['root'], txt:txt,childs:{}};
-                    this.projects_accesable[type][id] = this.projects[selected['root']]['childs'][id];
+                    this.projects_accessible[type][id] = this.projects[selected['root']]['childs'][id];
                     break;
                 case 'leaf':
                     this.projects[selected['root']]['childs'][selected['branch']]['childs'][id] = {parents:{branch:selected['branch'],root:selected['root']},txt:txt,childs:{todo:{},prog:{},done:{}}};
-                    this.projects_accesable['branch'][selected['branch']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'];
-                    this.projects_accesable[type][id] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][id];
+                    this.projects_accessible['branch'][selected['branch']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'];
+                    this.projects_accessible[type][id] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][id];
                     break;
                 case 'todo':
                 case 'prog':
                 case 'done':
                     this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id] = {parents:{branch:selected['branch'],root:selected['root'],leaf:selected['leaf']},txt:txt,title:title,time:time};
-                    this.projects_accesable['branch'][selected['branch']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'];
-                    this.projects_accesable['leaf'][selected['leaf']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'];
-                    this.projects_accesable[type][id] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id];
+                    this.projects_accessible['branch'][selected['branch']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'];
+                    this.projects_accessible['leaf'][selected['leaf']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'];
+                    this.projects_accessible[type][id] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id];
                     break;
             }
             //kanbanWriteBackend();
@@ -84,59 +99,27 @@ $(function () {
         remove(id,type){
             switch(type) {
                 case 'root':
-                    for(let branch_id in this.projects[id]['childs']){ //for every branch
-                        for(let leaf_id in this.projects[id]['childs'][branch_id]['childs']){ // for every leaf
-                            for(let tpd in {'todo':'','prog':'','done':''}){ // for every todo,prog,done
-                                for(let entity in this.projects[id]['childs'][branch_id]['childs'][leaf_id]['childs'][tpd]){ // for every todo,prog,done
-                                    delete this.projects_accesable[tpd][entity];
-                                }
-                            }
-                            delete this.projects_accesable['leaf'][leaf_id];
-                        }
-                        delete this.projects_accesable['branch'][branch_id];
-                    }
                     delete this.projects[id];
                     break;
                 case 'branch':
-                    let prootid = this.projects_accesable[type][id]['parent'];
-                    console.log(type);
-                    console.log(id);
-                    console.log(prootid);
-                    for(let leaf_id in this.projects[prootid]['childs'][id]['childs']){ // for every leaf
-                        for(let tpd in {'todo':'','prog':'','done':''}){ // for every todo,prog,done
-                            for(let entity in this.projects[prootid]['childs'][id]['childs'][leaf_id]['childs'][tpd]){ // for every todo,prog,done
-                                delete this.projects_accesable[tpd][entity];
-                            }
-                        }
-                        delete this.projects_accesable['leaf'][leaf_id];
-                    }
+                    let prootid = this.projects_accessible[type][id]['parent'];
                     delete this.projects[prootid]['childs'][id];
-                    delete this.projects_accesable[type][id];
                     break;
                 case 'leaf':
-                    let psrootid = this.projects_accesable[type][id]['parents']['root'];
-                    let psbranchid = this.projects_accesable[type][id]['parents']['branch'];
-                    for(let tpd in {'todo':'','prog':'','done':''}){ // for every todo,prog,done
-                        for(let entity in this.projects[psrootid]['childs'][psbranchid]['childs'][id]['childs'][tpd]){ // for every todo,prog,done
-                            delete this.projects_accesable[tpd][entity];
-                        }
-                    }
-                    delete this.projects_accesable[type][id];
-                    delete this.projects_accesable['branch'][psbranchid]['childs'][id];
+                    let psrootid = this.projects_accessible[type][id]['parents']['root'];
+                    let psbranchid = this.projects_accessible[type][id]['parents']['branch'];
                     delete this.projects[psrootid]['childs'][psbranchid]['childs'][id];
                     break;
                 case 'todo':
                 case 'prog':
                 case 'done':
-                    let ps3rootid = this.projects_accesable[type][id]['parents']['root'];
-                    let ps3branchid = this.projects_accesable[type][id]['parents']['branch'];
-                    let ps3leafid = this.projects_accesable[type][id]['parents']['leaf'];
+                    let ps3rootid = this.projects_accessible[type][id]['parents']['root'];
+                    let ps3branchid = this.projects_accessible[type][id]['parents']['branch'];
+                    let ps3leafid = this.projects_accessible[type][id]['parents']['leaf'];
                     delete this.projects[ps3rootid]['childs'][ps3branchid]['childs'][ps3leafid]['childs'][type][id];
-                    delete this.projects_accesable['branch'][ps3branchid]['childs'][ps3leafid]['childs'][type][id];
-                    delete this.projects_accesable['leaf'][ps3leafid]['childs'][type][id];
-                    delete this.projects_accesable[type][id];
                     break;
             }
+            this.recreateProjectsAccessible();
             kanbanWriteBackend();
         }
     }
@@ -172,12 +155,12 @@ $(function () {
                     kanban_data.remove(id,'root');
                 }
                 if(body.hasClass('branch')){
-                    projects_selected[kanban_data.projects_accesable['branch'][id]['parent']][1] = '';
-                    projects_selected[kanban_data.projects_accesable['branch'][id]['parent']][2] = '';
+                    projects_selected[kanban_data.projects_accessible['branch'][id]['parent']][1] = '';
+                    projects_selected[kanban_data.projects_accessible['branch'][id]['parent']][2] = '';
                     kanban_data.remove(id,'branch');
                 }
                 if(body.hasClass('leaf')){
-                    projects_selected[kanban_data.projects_accesable['leaf'][id]['parents']['root']][2] = '';
+                    projects_selected[kanban_data.projects_accessible['leaf'][id]['parents']['root']][2] = '';
                     kanban_data.remove(id,'leaf');
                 }
             }
@@ -207,7 +190,7 @@ $(function () {
             case 'todo':
             case 'prog':
             case 'done':
-                if(selected['leaf'] == '' || $.isEmptyObject(kanban_data.projects_accesable['branch'][selected['branch']]['childs'])){
+                if(selected['leaf'] == '' || $.isEmptyObject(kanban_data.projects_accessible['branch'][selected['branch']]['childs'])){
                     toastr.warning(`Can't add without a parent.`);
                     return;
                 }
@@ -344,7 +327,7 @@ $(function () {
                     selected['leaf'] = projects_selected[selected['root']][2];
                 }else{
                     let akey;
-                    for(akey in kanban_data.projects_accesable['branch'][id]['childs']){
+                    for(akey in kanban_data.projects_accessible['branch'][id]['childs']){
                         break;
                     }
                     selected['leaf'] = akey;
@@ -400,7 +383,6 @@ $(function () {
 
         let entry = {
             projects: kanban_data.projects,
-            projects_accesable: kanban_data.projects_accesable,
             selected: selected,
             selected_old: selected_old,
             projects_selected: projects_selected,
@@ -447,7 +429,7 @@ $(function () {
             response.json().then(function (data) {
                 console.log(data);
                 kanban_data.projects =  data['projects'];
-                kanban_data.projects_accesable = data['projects_accesable'];
+                kanban_data.recreateProjectsAccessible();
                 selected = data['selected'];
                 selected_old = data['selected_old'];
                 projects_selected = data['projects_selected'];
@@ -678,6 +660,16 @@ $(function () {
         // calendar is distorted at the beginning. This is an official bug.
         // Fix it by rendering it few times at the beginning.
         calendar.render();
+        let ssss =         {
+            title          : 'tingting',
+            start          : new Date(y, m, d, 15, 30),
+            allDay         : false,
+            backgroundColor: '#ff73b7',
+            borderColor    : '#ff7fff'
+        };
+
+        calendar.addEvent(ssss )
+
     }
 
     $('#sidebar-toggle-button, #pills-calendar-view-tab').on( "click", function() {
@@ -687,4 +679,6 @@ $(function () {
         // Hence, call the render function after sidebar is fully extended. Which means waiting a little bit before requesting render.
         myTimeout = setTimeout(function(){calendar.updateSize();clearTimeout(myTimeout);}, 100);
     });
+
+
 })
