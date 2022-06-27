@@ -2,7 +2,7 @@ from __future__ import print_function
 
 import datetime
 import os.path
-
+import json
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -35,18 +35,28 @@ def main():
         with open('token.json', 'w') as token:
             token.write(creds.to_json())
 
+    a_calendar_id = ''
+    an_event = ''
     try:
         service = build('calendar', 'v3', credentials=creds)
-
         page_token = None
         while True:
             calendar_list = service.calendarList().list(pageToken=page_token).execute()
             for calendar_list_entry in calendar_list['items']:
                 print('{:<20},id: {:>20}'.format(calendar_list_entry['summary'],calendar_list_entry['id']))
+                a_calendar_id = calendar_list_entry['id']
             page_token = calendar_list.get('nextPageToken')
             if not page_token:
                 break
-
+        while True:
+            events = service.events().list(calendarId=a_calendar_id, pageToken=page_token).execute()
+            for event in events['items']:
+                print(event['summary'])
+                an_event = event
+            page_token = events.get('nextPageToken')
+            if not page_token:
+                break
+        print(an_event)
     except HttpError as error:
         print('An error occurred: %s' % error)
 

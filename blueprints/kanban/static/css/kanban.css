@@ -1,3 +1,7 @@
+.fc .fc-toolbar-title {
+	font-size: 1.0em;
+	margin: 0;
+}
 .card-saved a{
     visibility:hidden;
 }
@@ -11,7 +15,7 @@
 	--fc-list-event-hover-bg-color: #46535e;
 }
 .calendar-card{
-    width: 60%;
+    width: 100%;
 }
 .tab-content{
     overflow: hidden;
@@ -25,7 +29,6 @@
 #kanban-projects-card{
     margin-left: 0px !important;
     padding: 0;
-    width: 8%;
     padding: 0;
 }
 

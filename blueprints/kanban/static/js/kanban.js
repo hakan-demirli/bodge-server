@@ -185,6 +185,7 @@ $(function () {
         let myguid = guid();
         let ak = savedCard(e.data.extra.header,e.data.extra.type,myguid,txt,e.data.extra.icon);
         let tmp = $(e.target.closest(`#${e.data.extra.name}-card`)).find(`#${e.data.extra.name}-body`);
+        console.log($('#clock-add-time').val());
         switch(e.data.extra.type) {
             case 'branch':
                 if(selected['root'] == ''){
@@ -465,7 +466,7 @@ $(function () {
 
         },
         receive: function( e, ui ) {
-            let dropped_card = ui.item.find(".card-saved");
+            let dropped_card = ui.item.find(".card-saved-body");
             let card_id = dropped_card.attr('id');
             let body_name = e.target.id;
             console.log(body_name);
