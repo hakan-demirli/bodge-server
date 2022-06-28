@@ -15,7 +15,7 @@ $(function () {
                             <div id="title" style="float: left;">${title}</div>
                             <div id="time" style="float: right;">${time}</div>
                         </div>`):('')}
-            <div class="card-body card-saved-body ${type}" id=${guid}>${txt}</div>
+            <div class="card-body card-saved-body ${type}" id=${guid} style="white-space: pre-line">${txt}</div>
             <a href='#'><i class="${icon}"></i></a>
         </div>`;
         return ak;
