@@ -60,7 +60,7 @@ function readBackend() {
                                     <button type="button" class="btn btn-tool btn-sm" onClick="grid.removeWidget(this.parentNode.parentNode.parentNode.parentNode.parentNode);"><i class="fas fa-times"></i></button>
                                 </div>
                             </div>
-                                <div id="resizable">
+                            <div id="resizable">
                                 <iframe src="${val["url"]}" frameborder="0" id="elemId"></iframe>
                             </div>
                            </div>`;
