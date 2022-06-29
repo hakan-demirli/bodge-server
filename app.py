@@ -22,8 +22,8 @@ class MyFlaskServer():
         self.__registerAllBlueprints()
         if(not isfile(self.user_data_file_path)):
             self.__initUserData()
-        self.app.add_url_rule('/backend', 'backend', self.__baseBackend, methods=["POST"])
-        self.app.add_url_rule('/', 'root', self.__rootRoute, methods=["GET"])
+        self.app.add_url_rule('/backend', 'backend', login_required(self.__baseBackend), methods=["POST"])
+        self.app.add_url_rule('/', 'root', login_required(self.__rootRoute), methods=["GET"])
 
     def __initUserData(self):
         self.user_data_json = {"sidebar": [], "navbar": {}, "settings":{}, "cards":[]}
