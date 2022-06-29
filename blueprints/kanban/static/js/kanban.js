@@ -405,9 +405,7 @@ $(function () {
                 console.log(`Looks like there was a problem. Status code: ${response.status}`);
                 return;
             }
-            response.json().then(function (data) {
-                console.log(data);
-            });
+            response.json().then(function (data) {});
         })
         .catch(function (error) {
             console.log("Fetch error: " + error);
@@ -432,7 +430,6 @@ $(function () {
                 return;
             }
             response.json().then(function (data) {
-                console.log(data);
                 kanban_data.projects =  data['projects'];
                 kanban_data.recreateProjectsAccessible();
                 selected = data['selected'];
@@ -450,7 +447,6 @@ $(function () {
                 tmp = tmp + fuckcss;
                 $(`.kanban-projects-root`).children('#kanban-projects-body').html(tmp);
                 selectCardFrontend('root');
-                console.log("here")
                 if( selected['root'] != '')
                     recreateRightColumns('root');
                 selectCardFrontend('root');
@@ -590,7 +586,6 @@ $(function () {
             let itm = kanban_data.projects_accessible[info.event.groupId][info.event.id];
             let types = {root:'', branch:'', leaf:''}; //order matters
             for(let type in types){
-                console.log(type);
                 selectCardBackend(type,itm['parents'][type]);
                 recreateRightColumns(type);
                 selectCardFrontend(type);

@@ -41,6 +41,7 @@ class MyFlaskServer():
             bp_module = import_module(bp_module_name)
             tmp = bp_module.MyPlugin(queue.Queue(),queue.Queue())
             self.app.register_blueprint(tmp.bp)
+            print('bp name: ', tmp.bp.name)
             self.plugins.append(tmp)
 
     def __baseBackend(self):
