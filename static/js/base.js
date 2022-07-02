@@ -1,6 +1,7 @@
 
 function sidebarReadBackend() {
     let entry = {
+        sender: 'html_request',
         command: 'READ'
     };
 

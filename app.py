@@ -2,13 +2,12 @@ from flask import Flask, request, jsonify, redirect, make_response, redirect
 from flask_simplelogin import SimpleLogin, login_required
 from importlib import import_module
 from pathlib import Path
-from blueprints.BpBoilerplate import BpBoilerplate
 from os.path import isfile
-import queue, json, re, time
+import json
 
 
-class MyFlaskServer(BpBoilerplate):
-    my_q = queue.Queue()
+class MyFlaskServer():
+    my_name = 'server'
     root_path = Path(__file__).parent
     blueprints_path = root_path / "blueprints"
     user_data_file_path = root_path / 'my_data.json'
@@ -17,7 +16,6 @@ class MyFlaskServer(BpBoilerplate):
     app = Flask(__name__)
 
     def __init__(self):
-        BpBoilerplate.__init__(self)
         self.app.config['SECRET_KEY'] = 'something-secret'
         self.app.config['SIMPLELOGIN_USERNAME'] = 'chuck'
         self.app.config['SIMPLELOGIN_PASSWORD'] = 'norris'
@@ -27,23 +25,11 @@ class MyFlaskServer(BpBoilerplate):
             self.__initUserData()
         self.app.add_url_rule('/backend', 'backend', login_required(self.__baseBackend), methods=["POST"])
         self.app.add_url_rule('/', 'root', login_required(self.__rootRoute), methods=["GET"])
-        self.__startAllBlueprints()
-
-    def regular_task(self):
-        time.sleep(1)
-
-    def queue_task(self,jsn):
-        return
-
-    def __startAllBlueprints(self):
-        for key in self.blueprints:
-            self.blueprints[key]['instance'].daemon = True
-            self.blueprints[key]['instance'].start()
 
     def __initUserData(self):
         self.user_data_json = {"sidebar": [], "navbar": {}, "settings":{}, "cards":[]}
         for key in self.blueprints:
-            bp_inst = self.blueprints[key]['instance']
+            bp_inst = self.blueprints[key]
             if bp_inst.page:
                 self.user_data_json["sidebar"].append({"name":(bp_inst.bp.name),"url":(bp_inst.bp.url_prefix),"icon":bp_inst.icon})
             if bp_inst.card:
@@ -57,15 +43,7 @@ class MyFlaskServer(BpBoilerplate):
             bp_module = import_module(bp_module_name)
             tmp = bp_module.MyBlueprint()
             self.app.register_blueprint(tmp.bp)
-            print('bp name: ', tmp.bp.name)
-            self.blueprints[tmp.bp.name] = {'module':bp_module,'instance':tmp}
-            self.all_q[tmp.bp.name] = tmp.my_q
-
-        self.all_q['server'] = self.my_q
-
-        for key in self.blueprints:
-            self.blueprints[key]['instance'].all_q = self.all_q
-
+            self.blueprints[tmp.bp.name] = tmp
 
     def __baseBackend(self):
         req = request.get_json()
@@ -79,6 +57,7 @@ class MyFlaskServer(BpBoilerplate):
             case 'WRITE':
                 with open(self.user_data_file_path, 'w') as outfile:
                     json.dump(req, outfile, indent=4)
+                    jsn_res = {}
         return make_response(jsonify(jsn_res), 200)
 
     def __rootRoute(self):
@@ -86,6 +65,4 @@ class MyFlaskServer(BpBoilerplate):
 
 if __name__ == "__main__":
     mfs = MyFlaskServer()
-    mfs.daemon = True
-    mfs.start()
     mfs.app.run(host='0.0.0.0',debug=False)

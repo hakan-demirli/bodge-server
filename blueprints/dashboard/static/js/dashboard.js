@@ -1,6 +1,7 @@
 
 var serializedData = [];
 let serializedFull;
+var from_base;
 
 let grid = GridStack.init({
 minRow: 1, // don't let it collapse when empty
@@ -69,12 +70,46 @@ function readBackend() {
             });
             console.log('serialized data: ',serializedData);
             loadGrid();
+            writeBackend();
         });
     })
     .catch(function (error) {
         console.log("Fetch error: " + error);
     });
 }
+
+function readDashBackend() {
+    let entry = {
+        command: 'READ'
+    };
+
+    fetch(`${window.origin}/dashboard/backend`, {
+        method: "POST",
+        credentials: "include",
+        body: JSON.stringify(entry),
+        cache: "no-cache",
+        headers: new Headers({"content-type": "application/json"})
+    }).then(function (response) {
+        if (response.status !== 200) {
+            console.log(`Looks like there was a problem. Status code: ${response.status}`);
+            return;
+        }
+        response.json().then(function (data) {
+            console.log(data);
+            if($.isEmptyObject(data)){
+                readBackend();
+            }else{
+                serializedData = data['serializedData'];
+                console.log(serializedData)
+                loadGrid();
+            }
+        });
+    })
+    .catch(function (error) {
+        console.log("Fetch error: " + error);
+    });
+}
+
 
 function writeBackend() {
 
@@ -118,5 +153,5 @@ function guid() {
     return _p8() + _p8(true) + _p8(true) + _p8();
 }
 
-readBackend();
+readDashBackend();
 

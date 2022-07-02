@@ -1,11 +1,9 @@
 from flask import Blueprint, render_template, request, jsonify, redirect, make_response
 from flask_simplelogin import login_required
 from pathlib import Path
-from ..BpBoilerplate import BpBoilerplate
-import time, json, os, subprocess, queue
+import json, os, subprocess
 
-class MyBlueprint(BpBoilerplate):
-    my_q = queue.Queue()
+class MyBlueprint():
     bp = Blueprint( name='Script Launcher',
                 import_name=__name__,
                 url_prefix='/script_launcher',
@@ -20,7 +18,6 @@ class MyBlueprint(BpBoilerplate):
     scripts = {}
 
     def __init__(self):
-        BpBoilerplate.__init__(self)
         self.__find_scripts()
         self.__init_user_data()
         self.__update_scripts()
@@ -59,13 +56,6 @@ class MyBlueprint(BpBoilerplate):
                     self.scripts[script_name].terminate()
                     self.scripts[script_name].wait()
                     del self.scripts[script_name]
-
-    def regular_task(self):
-        time.sleep(1)
-        #print("this is a regular task")
-
-    def queue_task(self,jsn):
-        print("queue task from: " + self.__class__.__name__)
 
     def script_launcher_card(self):
         return render_template('script_launcher/script_launcher_card.html')

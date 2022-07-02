@@ -1,11 +1,9 @@
 from flask import Blueprint, render_template, request, jsonify, redirect, make_response
 from flask_simplelogin import login_required
 from pathlib import Path
-from ..BpBoilerplate import BpBoilerplate
-import time, json, os, queue, threading
+import json, os, threading
 
-class MyBlueprint(BpBoilerplate):
-    my_q = queue.Queue()
+class MyBlueprint():
     bp = Blueprint( name='Kanban',
                 import_name=__name__,
                 url_prefix='/kanban',
@@ -18,7 +16,6 @@ class MyBlueprint(BpBoilerplate):
     lock = threading.Lock()
 
     def __init__(self):
-        BpBoilerplate.__init__(self)
         self.__init_user_data()
         self.bp.route('/')(login_required(self.kanban))
         self.bp.route('/backend', methods=["POST"])(login_required(self.kanban_backend))
@@ -32,13 +29,6 @@ class MyBlueprint(BpBoilerplate):
                             'projects_selected':{}}
             with open(self.user_data_path, 'w') as outfile:
                 json.dump(dummy_json, outfile, indent=4)
-
-    def regular_task(self):
-        time.sleep(1)
-        #print("this is a regular task")
-
-    def queue_task(self,jsn):
-        print("queue task from: " + self.__class__.__name__)
 
     def kanban(self):
         return render_template('kanban/kanban.html')
