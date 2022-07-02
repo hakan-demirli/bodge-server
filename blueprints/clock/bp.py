@@ -1,10 +1,11 @@
 from flask import Blueprint, render_template, request, jsonify, redirect, make_response
 from flask_simplelogin import login_required
 from pathlib import Path
-from ..Plugin import Plugin
-import time, json, os
+from ..BpBoilerplate import BpBoilerplate
+import time, json, os, queue
 
-class MyPlugin(Plugin):
+class MyBlueprint(BpBoilerplate):
+    my_q = queue.Queue()
     bp = Blueprint( name='Clock',
                 import_name=__name__,
                 url_prefix='/clock',
@@ -15,8 +16,8 @@ class MyPlugin(Plugin):
     page = 0
     card = 1
 
-    def __init__(self,all_q,my_q):
-        Plugin.__init__(self,all_q,my_q)
+    def __init__(self):
+        BpBoilerplate.__init__(self)
         if(not os.path.isfile(self.user_data_path)):
            self.__init_user_data()
         self.bp.route('/card')(login_required(self.clock_card))

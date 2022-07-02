@@ -1,10 +1,11 @@
 from flask import Blueprint, render_template, request, jsonify, redirect, make_response
 from flask_simplelogin import login_required
 from pathlib import Path
-from ..Plugin import Plugin
-import time, json, os
+from ..BpBoilerplate import BpBoilerplate
+import time, json, os, queue
 
-class MyPlugin(Plugin):
+class MyBlueprint(BpBoilerplate):
+    my_q = queue.Queue()
     bp = Blueprint( name='Dashboard',
                 import_name=__name__,
                 url_prefix='/dashboard',
@@ -16,8 +17,8 @@ class MyPlugin(Plugin):
     card = 0
 
 
-    def __init__(self,all_q,my_q):
-        Plugin.__init__(self,all_q,my_q)
+    def __init__(self):
+        BpBoilerplate.__init__(self)
         self.__init_user_data()
         self.bp.route('/')(login_required(self.dashboard))
         self.bp.route('/backend', methods=["POST"])(login_required(self.dashboard_backend))

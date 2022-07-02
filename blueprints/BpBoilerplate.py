@@ -1,13 +1,12 @@
-import threading
-import logging, sys
-logging.basicConfig(stream=sys.stderr, level=logging.INFO)
+import threading, queue
 
-class Plugin(threading.Thread):
+class BpBoilerplate(threading.Thread):
 
-    def __init__(self, all_q, my_q):
+    my_q = None
+    all_q = {}
+
+    def __init__(self):
         threading.Thread.__init__(self)
-        self.all_q = all_q
-        self.my_q = my_q
 
     def run(self):
         t = threading.current_thread()
