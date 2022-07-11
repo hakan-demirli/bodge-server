@@ -39,7 +39,8 @@ class MyFlaskServer():
 
     def __registerAllBlueprints(self):
         for index, path in enumerate(self.blueprints_path.rglob('bp.py')):
-            bp_module_name = str(path.relative_to(self.root_path).with_suffix('')).replace('\\','.')
+            bp_module_name = str(path.relative_to(self.root_path).with_suffix('')).replace('\\','.') # windows path
+            bp_module_name = bp_module_name.replace('/','.') # linux path
             bp_module = import_module(bp_module_name)
             tmp = bp_module.MyBlueprint()
             self.app.register_blueprint(tmp.bp)
