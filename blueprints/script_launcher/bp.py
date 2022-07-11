@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, request, jsonify, redirect, make_response
 from flask_simplelogin import login_required
 from pathlib import Path
-import json, os, subprocess
+import json, os, subprocess, sys
+
 
 class MyBlueprint():
     bp = Blueprint( name='Script Launcher',
@@ -51,7 +52,7 @@ class MyBlueprint():
             jsn_usr = json.load(json_file)
             for script_name, path in self.scripts_files.items():
                 if ((script_name not in self.scripts) and (jsn_usr[script_name] == "on")):
-                    self.scripts[script_name] = (subprocess.Popen(['python', path]))
+                    self.scripts[script_name] = (subprocess.Popen([Path(sys.executable).name, path]))
                 if ((script_name in self.scripts) and (jsn_usr[script_name] == "off")):
                     self.scripts[script_name].terminate()
                     self.scripts[script_name].wait()
