@@ -4,31 +4,31 @@ from pathlib import Path
 import json, os
 
 class MyBlueprint():
-    bp = Blueprint( name='Assistant',
+    bp = Blueprint( name='Terminal',
                 import_name=__name__,
-                url_prefix='/assistant',
+                url_prefix='/terminal',
                 template_folder='templates',
                 static_folder='static')
-    user_data_path = Path(__file__).parent / 'assistant.json'
+    user_data_path = Path(__file__).parent / 'terminal.json'
     icon = 'fa-solid fa-border-all'
     page = 0
     card = 1
 
     def __init__(self):
         self.__init_user_data()
-        self.bp.route('/card')(login_required(self.assistant_card))
-        self.bp.route('/backend')(login_required(self.assistant_backend))
+        self.bp.route('/card')(login_required(self.terminal_card))
+        self.bp.route('/backend')(login_required(self.terminal_backend))
 
     def __init_user_data(self):
         if(not os.path.isfile(self.user_data_path)):
-            dummy_json = {"assistant": []}
+            dummy_json = {"terminal": []}
             with open(self.user_data_path, 'w') as outfile:
                 json.dump(dummy_json, outfile, indent=4)
 
-    def assistant_card(self):
-        return render_template('assistant/assistant_card.html')
+    def terminal_card(self):
+        return render_template('terminal/terminal_card.html')
 
-    def assistant_backend(self):
+    def terminal_backend(self):
         req = request.get_json()
         jsn_res = {}
         match req['command']:

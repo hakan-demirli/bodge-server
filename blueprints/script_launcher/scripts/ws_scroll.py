@@ -23,7 +23,6 @@ def on_scroll(x, y, dx, dy):
             keyboard.release(Key.right)
         else:
             keyboard.release(Key.left)
-        sleep(0.1)
         #print('Scrolled {0} at {1}'.format('down' if dy < 0 else 'up',(x, y)))
 
 with mouse.Listener(on_scroll=on_scroll) as listener:

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %} Dashboard {% endblock %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="/static/plugins/fullcalendar/main.css"/>
+<link href="/kanban/static/css/kanban.css" type="text/css" rel="stylesheet" />
+<link href="/static/plugins/tempusdominus/css/tempus-dominus.min.css" rel="stylesheet">
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="">
+  <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="pills-kanban-view-tab" data-bs-toggle="pill" data-bs-target="#pills-kanban-view" type="button" role="tab" aria-controls="pills-kanban-view" aria-selected="true">Kanban-view</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="pills-calendar-view-tab" data-bs-toggle="pill" data-bs-target="#pills-calendar-view" type="button" role="tab" aria-controls="pills-calendar-view" aria-selected="false">Calendar-view</button>
+    </li>
+  </ul>
+  <div class="tab-content" id="pills-tabContent">
+    <div class="tab-pane fade show active  h-100" id="pills-kanban-view" role="tabpanel" aria-labelledby="pills-kanban-view-tab" tabindex="0">
+      test1
+    </div>
+    <div class="tab-pane fade" id="pills-calendar-view" role="tabpanel" aria-labelledby="pills-calendar-view-tab" tabindex="0">
+      test
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block javascripts %}
+<script src="/static/plugins/fullcalendar/main.js"></script>
+<script src="/kanban/static/js/kanban.js"></script>
+<script src="/static/plugins/jquery-ui/jquery-ui.min.js"></script>
+<script src="/static/plugins/popper/popper.min.js"></script>
+<script src="/static/plugins/tempusdominus/js/tempus-dominus.min.js"></script>
+{% endblock javascripts %}
+
