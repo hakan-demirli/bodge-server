@@ -13,7 +13,7 @@
 * [x] add dark mode
 * [x] add templated gridstack as a route/serve
     * [x] implement serialization backend
-        * [ ] Fix serialization backend bugs
+        * [x] Fix serialization backend bugs
 * [ ] add search for the new widgets button
 * [x] Add dynamic sidebar
 * [x] Add todo card
@@ -24,6 +24,11 @@
     * [ ] Add backend to the calendar.
         * [ ] Add an event to Google calendar via python.
     * [x] Fix Calendar Position
+* [ ] Add console to settings
+    * [ ] Learn more about the [pty.](https://stackoverflow.com/questions/4022600/python-pty-fork-how-does-it-work)
+        * An [example](https://github.com/cs01/pyxtermjs).
+    * [ ] Create a standalone flask app with pty and socketio.
+    * [ ] Convert that app to a blueprint
 * [ ] Add a notepad webpage
 * [ ] Add a filebrowser webpage
 * [ ] Add a music/video player webpage
