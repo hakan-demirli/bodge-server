@@ -6,12 +6,20 @@ $(function () {
                     <textarea class="form-control" rows="1" placeholder=""></textarea>
                     <button type="submit" class="btn btn-primary w-50" id="kanban-add-button"><i class="fa-solid fa-check"></i></button>
                     <button type="submit" class="btn btn-secondary float-right w-50" id="kanban-cancel-button"><i class="fas fa-times"></i></button>
-                </div>`; // Size of the cards expand/shrink if smth added/removed. Hence, add an invisible card to prevent.
+                </div>`; // Size of the cards expand/shrink if smth added/removed to the empty column. Hence, add an invisible card to prevent it.
 
-    function savedCard(header,type,guid,txt,icon,title,time){
+    function savedCard(header,type,guid,txt,icon,title,time,priority){
+        let bg_color = ''
+        switch(priority){
+            case "5": bg_color = 'style="border-bottom: 1px solid rgb(255,   0,   0);"'; break;
+            case "4": bg_color = 'style="border-bottom: 1px solid rgb(255, 150,   0);"'; break;
+            case "3": bg_color = 'style="border-bottom: 1px solid rgb(100, 250,   0);"'; break;
+            case "2": bg_color = 'style="border-bottom: 1px solid rgb( 50, 190, 140);"'; break;
+            case "1": bg_color = 'style="border-bottom: 1px solid rgb(  0,   0,   0);"'; break;
+        }
         let ak = `
-        <div class="card card-saved">
-            ${header ?(`<div class="card-header card-header-drag">
+        <div class="card card-saved" style="">
+            ${header ?(`<div class="card-header card-header-drag" ${bg_color}>
                             <div id="title" style="float: left;">${title}</div>
                             <div id="time" style="float: right;">${time}</div>
                         </div>`):('')}
@@ -24,7 +32,20 @@ $(function () {
     function editCard(row,date,summary){
         let ak = `
         <div class="form-group">
-            ${summary ?(`<input type="text" placeholder="Summary" class="form-control" id="title">`):('')}
+            ${summary ?(`
+            <div class="input-group">
+                <input type="text" placeholder="Summary" class="form-control" id="title">
+                <div class="input-group-append">
+                    <select class="form-select">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                </div>
+            </div>
+            `):('')}
             <textarea class="form-control" rows="${row}" placeholder="..." id="content"></textarea>
             ${date ?(`
                     <div class='input-group' id='datetimepicker1' data-td-target-input='nearest' data-td-target-toggle='nearest'>
@@ -71,7 +92,7 @@ $(function () {
                 }
             }
         }
-        add(id,type,txt,title,time){
+        add(id,type,txt,title,time,priority){
             switch(type) {
                 case 'root':
                     this.projects[id] = {txt:txt,childs:{}};
@@ -88,7 +109,7 @@ $(function () {
                 case 'todo':
                 case 'prog':
                 case 'done':
-                    this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id] = {parents:{branch:selected['branch'],root:selected['root'],leaf:selected['leaf']},txt:txt,title:title,time:time};
+                    this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id] = {parents:{branch:selected['branch'],root:selected['root'],leaf:selected['leaf']},txt:txt,title:title,time:time,priority:priority};
                     this.projects_accessible['branch'][selected['branch']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'];
                     this.projects_accessible['leaf'][selected['leaf']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'];
                     this.projects_accessible[type][id] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id];
@@ -170,14 +191,15 @@ $(function () {
     }
 
     function saveCard(e){
-        let txt = $(e.target.closest('.form-group')).children('#content').val();
-        let title = $(e.target.closest('.form-group')).children('#title').val();
-        let time = $(e.target.closest('.form-group')).children('.input-group').children('#clock-add-time').val();
+        let txt      = $(e.target.closest('.form-group')).children('#content').val();
+        let title    = $(e.target.closest('.form-group')).children('.input-group').children('#title').val();
+        let time     = $(e.target.closest('.form-group')).children('.input-group').children('#clock-add-time').val();
+        let priority = $(e.target.closest('.form-group')).children('.input-group').children('.input-group-append').children('.form-select').val();
         if(time=="" && selected['leaf'] !== undefined){
             console.log('here', selected['leaf']);
             time = kanban_data.projects_accessible['leaf'][selected['leaf']]['time'];}
         let myguid = guid();
-        let ak = savedCard(e.data.extra.header,e.data.extra.type,myguid,txt,e.data.extra.icon,title,time);
+        let ak = savedCard(e.data.extra.header,e.data.extra.type,myguid,txt,e.data.extra.icon,title,time,priority);
         let tmp = $(e.target.closest(`#${e.data.extra.name}-card`)).find(`#${e.data.extra.name}-body`);
 
         switch(e.data.extra.type) {
@@ -204,7 +226,7 @@ $(function () {
         }
         tmp.prepend(ak);
         removeCard(e);
-        kanban_data.add(myguid,e.data.extra.type,txt,title,time);
+        kanban_data.add(myguid,e.data.extra.type,txt,title,time,priority);
         selectCardBackend(e.data.extra.type,myguid);
         recreateRightColumns(e.data.extra.type);
         selectCardFrontend(e.data.extra.type);
@@ -219,10 +241,11 @@ $(function () {
                 if ($.isEmptyObject(kanban_data.projects[selected['root']]["childs"]))
                     break;
                 for(let key in kanban_data.projects[selected['root']]["childs"]){
-                    let txt =  kanban_data.projects[selected['root']]["childs"][key]['txt'];
-                    let title =  kanban_data.projects[selected['root']]["childs"][key]['title'];
-                    let time =  kanban_data.projects[selected['root']]["childs"][key]['time'];
-                    let ak = savedCard(0,'branch',key,txt,"fa-solid fa-rectangle-xmark",title,time);
+                    let txt       = kanban_data.projects[selected['root']]["childs"][key]['txt'];
+                    let title     = kanban_data.projects[selected['root']]["childs"][key]['title'];
+                    let time      = kanban_data.projects[selected['root']]["childs"][key]['time'];
+                    let priority  = kanban_data.projects[selected['root']]["childs"][key]['priority'];
+                    let ak        = savedCard(0,'branch',key,txt,"fa-solid fa-rectangle-xmark",title,time,priority);
                     tmp = tmp + ak;
                 }
                 tmp = tmp + fuckcss;
@@ -234,10 +257,11 @@ $(function () {
                     break;
                 tmp = '';
                 for(let key in kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"]){
-                    let txt =  kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"][key]['txt'];
-                    let title =  kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"][key]['title'];
-                    let time =  kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"][key]['time'];
-                    let ak = savedCard(0,'leaf',key,txt,"fa-solid fa-rectangle-xmark",title,time);
+                    let txt      = kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"][key]['txt'];
+                    let title    = kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"][key]['title'];
+                    let time     = kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"][key]['time'];
+                    let priority = kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"][key]['priority'];
+                    let ak = savedCard(0,'leaf',key,txt,"fa-solid fa-rectangle-xmark",title,time,priority);
                     tmp = tmp + ak;
                 }
                 tmp = tmp + fuckcss;
@@ -252,10 +276,11 @@ $(function () {
                 tmp = '';
                 for(let tpd in {'todo':'','prog':'','done':''}){
                     for(let key in  kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][tpd]){
-                        let txt = kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][tpd][key]['txt'];
-                        let title = kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][tpd][key]['title'];
-                        let time = kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][tpd][key]['time'];
-                        let ak = savedCard(1,tpd,key,txt,"fa-solid fa-square-xmark",title,time);
+                        let txt      = kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][tpd][key]['txt'];
+                        let title    = kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][tpd][key]['title'];
+                        let time     = kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][tpd][key]['time'];
+                        let priority = kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][tpd][key]['priority'];
+                        let ak = savedCard(1,tpd,key,txt,"fa-solid fa-square-xmark",title,time,priority);
                         tmp = tmp + ak;
                     }
                     $(`#kanban-${tpd}-card`).children(`#kanban-${tpd}-body`).html(tmp);
@@ -477,10 +502,11 @@ $(function () {
 
                 let tmp = '';
                 for(let key in kanban_data.projects){
-                    let txt =  kanban_data.projects[key]['txt'];
-                    let title =  kanban_data.projects[key]['title'];
-                    let time =  kanban_data.projects[key]['time'];
-                    let ak = savedCard(0,'root',key,txt,"fa-solid fa-rectangle-xmark",title,time);
+                    let txt      = kanban_data.projects[key]['txt'];
+                    let title    = kanban_data.projects[key]['title'];
+                    let time     = kanban_data.projects[key]['time'];
+                    let priority = kanban_data.projects[key]['priority'];
+                    let ak = savedCard(0,'root',key,txt,"fa-solid fa-rectangle-xmark",title,time,priority);
                     tmp = tmp + ak;
                 }
                 tmp = tmp + fuckcss;
