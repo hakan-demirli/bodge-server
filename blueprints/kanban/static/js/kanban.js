@@ -92,7 +92,7 @@ $(function () {
                 }
             }
         }
-        add(id,type,txt,title,time,priority){
+        add(id,type,txt,title,time,priority,prog_time,done_time){
             switch(type) {
                 case 'root':
                     this.projects[id] = {txt:txt,childs:{}};
@@ -109,7 +109,15 @@ $(function () {
                 case 'todo':
                 case 'prog':
                 case 'done':
-                    this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id] = {parents:{branch:selected['branch'],root:selected['root'],leaf:selected['leaf']},txt:txt,title:title,time:time,priority:priority};
+                    this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id] = {parents:{branch:selected['branch'],
+                        root:selected['root'],
+                        leaf:selected['leaf']},
+                        txt:txt,
+                        title:title,
+                        time:time,
+                        priority:priority,
+                        prog_time:prog_time,
+                        done_time:done_time};
                     this.projects_accessible['branch'][selected['branch']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'];
                     this.projects_accessible['leaf'][selected['leaf']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'];
                     this.projects_accessible[type][id] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id];
@@ -210,6 +218,8 @@ $(function () {
         let myguid = guid();
         let ak = savedCard(e.data.extra.header,e.data.extra.type,myguid,txt,e.data.extra.icon,title,time,priority);
         let tmp = $(e.target.closest(`#${e.data.extra.name}-card`)).find(`#${e.data.extra.name}-body`);
+        let prog_time = '';
+        let done_time = '';
 
         switch(e.data.extra.type) {
             case 'branch':
@@ -235,7 +245,7 @@ $(function () {
         }
         tmp.prepend(ak);
         removeCard(e);
-        kanban_data.add(myguid,e.data.extra.type,txt,title,time,priority);
+        kanban_data.add(myguid,e.data.extra.type,txt,title,time,priority,prog_time,done_time);
         selectCardBackend(e.data.extra.type,myguid);
         recreateRightColumns(e.data.extra.type);
         selectCardFrontend(e.data.extra.type);
@@ -273,8 +283,6 @@ $(function () {
                 if(selected['leaf'] == '')
                     break;
                 let t = kanban_data.projects_accessible['leaf'][selected['leaf']]["childs"];
-                if($.isEmptyObject(t['todo']) && $.isEmptyObject(t['prog']) && t['done'])
-                    break;
                 tmp = '';
                 for(let tpd in {'todo':'','prog':'','done':''}){
                     let pri = Array(5).fill('');
@@ -525,6 +533,30 @@ $(function () {
         });
     }
 
+    function formatDate(newDate) {
+        var sMonth = padValue(newDate.getMonth() + 1);
+        var sDay = padValue(newDate.getDate());
+        var sYear = newDate.getFullYear();
+        var sHour = newDate.getHours();
+        var sMinute = padValue(newDate.getMinutes());
+        var sAMPM = "AM";
+        var iHourCheck = parseInt(sHour);
+
+        if (iHourCheck > 12) {
+            sAMPM = "PM";
+            sHour = iHourCheck - 12;
+        }
+        else if (iHourCheck === 0) {
+            sHour = "12";
+        }
+        sHour = padValue(sHour);
+        return sMonth + "/" + sDay + "/" + sYear + ", " + sHour + ":" + sMinute + " " + sAMPM;
+    }
+
+    function padValue(value) {
+        return (value < 10) ? "0" + value : value;
+    }
+
     $('.connectedSortable').sortable({
         cancel: ".unsortable",
         update: function(e, ui) {
@@ -539,47 +571,26 @@ $(function () {
             let title    = kanban_data.projects_accessible[card_type][card_id]['title'];
             let time     = kanban_data.projects_accessible[card_type][card_id]['time'];
             let priority = kanban_data.projects_accessible[card_type][card_id]['priority'];
+            let prog_time = kanban_data.projects_accessible[card_type][card_id]['prog_time'];
+            let done_time = kanban_data.projects_accessible[card_type][card_id]['done_time'];
+            let new_guid = guid();
+            console.log(card_type, " ", card_id, " ");
+            kanban_data.remove(card_id,card_type);
+            dropped_card_body.toggleClass(card_type);
+            console.log(dropped_card_body.attr('id',new_guid));
 
             switch(body_name){
                 case 'kanban-todo-body':
-                    console.log('drop to do todo lol')
-                    kanban_data.add(card_id,'todo',txt,title,time,priority);
-                    if(dropped_card_body.hasClass("prog")){
-                        kanban_data.remove(card_id,'prog');
-                        dropped_card_body.toggleClass('prog');
-                        dropped_card_body.toggleClass('todo');
-                    }
-                    if(dropped_card_body.hasClass("done")){
-                        kanban_data.remove(card_id,'done');
-                        dropped_card_body.toggleClass('done');
-                        dropped_card_body.toggleClass('todo');
-                    }
+                    dropped_card_body.toggleClass('todo');
+                    kanban_data.add(new_guid,'todo',txt,title,time,priority,'','');
                 break;
                 case 'kanban-prog-body':
-                    kanban_data.add(card_id,'prog',txt,title,time,priority);
-                    if(dropped_card_body.hasClass("done")){
-                        kanban_data.remove(card_id,'done');
-                        dropped_card_body.toggleClass('done');
-                        dropped_card_body.toggleClass('prog');
-                    }
-                    if(dropped_card_body.hasClass("todo")){
-                        kanban_data.remove(card_id,'todo');
-                        dropped_card_body.toggleClass('todo');
-                        dropped_card_body.toggleClass('prog');
-                    }
+                    dropped_card_body.toggleClass('prog');
+                    kanban_data.add(new_guid,'prog',txt,title,time,priority,formatDate(new Date()),'');
                 break;
                 case 'kanban-done-body':
-                    kanban_data.add(card_id,'done',txt,title,time,priority);
-                    if(dropped_card_body.hasClass("prog")){
-                        kanban_data.remove(card_id,'prog');
-                        dropped_card_body.toggleClass('prog');
-                        dropped_card_body.toggleClass('done');
-                    }
-                    if(dropped_card_body.hasClass("todo")){
-                        kanban_data.remove(card_id,'todo');
-                        dropped_card_body.toggleClass('todo');
-                        dropped_card_body.toggleClass('done');
-                    }
+                    dropped_card_body.toggleClass('done');
+                    kanban_data.add(new_guid,'done',txt,title,time,priority,prog_time,formatDate(new Date()));
                 break;
             }
         },
