@@ -9,13 +9,13 @@ $(function () {
                 </div>`; // Size of the cards expand/shrink if smth added/removed to the empty column. Hence, add an invisible card to prevent it.
 
     function savedCard(header,type,guid,txt,icon,title,time,priority){
-        let bg_color = ''
+        let bg_color = '';
         switch(priority){
             case "5": bg_color = 'style="border-bottom: 1px solid rgb(255,   0,   0);"'; break;
             case "4": bg_color = 'style="border-bottom: 1px solid rgb(255, 150,   0);"'; break;
             case "3": bg_color = 'style="border-bottom: 1px solid rgb(100, 250,   0);"'; break;
             case "2": bg_color = 'style="border-bottom: 1px solid rgb( 50, 190, 140);"'; break;
-            case "1": bg_color = 'style="border-bottom: 1px solid rgb(  0,   0,   0);"'; break;
+            case "1": bg_color = ''; break;
         }
         let ak = `
         <div class="card card-saved" style="">
@@ -238,30 +238,24 @@ $(function () {
         let tmp = '';
         switch(column_type) {
             case 'root':
-                if ($.isEmptyObject(kanban_data.projects[selected['root']]["childs"]))
+                if($.isEmptyObject(kanban_data.projects[selected['root']]["childs"]))
                     break;
                 for(let key in kanban_data.projects[selected['root']]["childs"]){
-                    let txt       = kanban_data.projects[selected['root']]["childs"][key]['txt'];
-                    let title     = kanban_data.projects[selected['root']]["childs"][key]['title'];
-                    let time      = kanban_data.projects[selected['root']]["childs"][key]['time'];
-                    let priority  = kanban_data.projects[selected['root']]["childs"][key]['priority'];
-                    let ak        = savedCard(0,'branch',key,txt,"fa-solid fa-rectangle-xmark",title,time,priority);
+                    let br = kanban_data.projects_accessible['branch'][key];
+                    let ak = savedCard(0,'branch',key,br['txt'],"fa-solid fa-rectangle-xmark",br['title'],br['time'],br['priority']);
                     tmp = tmp + ak;
                 }
                 tmp = tmp + fuckcss;
                 $(`.kanban-projects-branch`).children('#kanban-projects-body').html(tmp);
             case 'branch':
-                if( selected['branch'] == '')
+                if(selected['branch'] == '')
                     break;
-                if ($.isEmptyObject(kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"]))
+                if($.isEmptyObject(kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"]))
                     break;
                 tmp = '';
-                for(let key in kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"]){
-                    let txt      = kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"][key]['txt'];
-                    let title    = kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"][key]['title'];
-                    let time     = kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"][key]['time'];
-                    let priority = kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"][key]['priority'];
-                    let ak = savedCard(0,'leaf',key,txt,"fa-solid fa-rectangle-xmark",title,time,priority);
+                for(let key in kanban_data.projects_accessible['branch'][selected['branch']]["childs"]){
+                    let lf = kanban_data.projects_accessible['leaf'][key];
+                    let ak = savedCard(0,'leaf',key,lf['txt'],"fa-solid fa-rectangle-xmark",lf['title'],lf['time'],lf['priority']);
                     tmp = tmp + ak;
                 }
                 tmp = tmp + fuckcss;
@@ -269,21 +263,23 @@ $(function () {
             case 'leaf':
                 if(selected['leaf'] == '')
                     break;
-                if($.isEmptyObject(kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"][selected['leaf']]["childs"]['todo']) &&
-                    $.isEmptyObject(kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"][selected['leaf']]["childs"]['prog']) &&
-                    $.isEmptyObject(kanban_data.projects[selected['root']]["childs"][selected['branch']]["childs"][selected['leaf']]["childs"]['done']))
+                let t = kanban_data.projects_accessible['leaf'][selected['leaf']]["childs"];
+                if($.isEmptyObject(t['todo']) && $.isEmptyObject(t['prog']) && t['done'])
                     break;
                 tmp = '';
                 for(let tpd in {'todo':'','prog':'','done':''}){
-                    for(let key in  kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][tpd]){
-                        let txt      = kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][tpd][key]['txt'];
-                        let title    = kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][tpd][key]['title'];
-                        let time     = kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][tpd][key]['time'];
-                        let priority = kanban_data.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][tpd][key]['priority'];
-                        let ak = savedCard(1,tpd,key,txt,"fa-solid fa-square-xmark",title,time,priority);
-                        tmp = tmp + ak;
+                    let pri = Array(5).fill('');
+                    for(let key in t[tpd]){
+                        let ak = savedCard(1,tpd,key,t[tpd][key]['txt'],"fa-solid fa-square-xmark",t[tpd][key]['title'],t[tpd][key]['time'],t[tpd][key]['priority']);
+                        switch(t[tpd][key]['priority']){
+                            case "5": pri[4] = pri[4] + ak; break;
+                            case "4": pri[3] = pri[3] + ak; break;
+                            case "3": pri[2] = pri[2] + ak; break;
+                            case "2": pri[1] = pri[1] + ak; break;
+                            default:  pri[0] = pri[0] + ak; break;
+                        }
                     }
-                    $(`#kanban-${tpd}-card`).children(`#kanban-${tpd}-body`).html(tmp);
+                    $(`#kanban-${tpd}-card`).children(`#kanban-${tpd}-body`).html(pri[4]+pri[3]+pri[2]+pri[1]+pri[0]); //dont use .join()
                     tmp = '';
                 }
         }
@@ -331,14 +327,12 @@ $(function () {
         }
         let now = new Date();
         let mdate = new Date(time);
-        let diff = mdate.getTime()-now.getTime()
+        let diff = mdate.getTime()-now.getTime();
         if(diff<0){
             $('#pills-time-view-tab').text('TIMEOUT')
         }else{
             let days = Math.floor(diff / (1000 * 60 * 60 * 24));
             let hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            let minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            let seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
             let t_weeks = Math.floor(days / (7));
             let t_days = Math.floor(days-t_weeks*7);
@@ -346,12 +340,12 @@ $(function () {
                 $('#pills-time-view-tab').text(t_weeks + ' weeks remaining')
             }else{
                 if(t_weeks>=1){
-                    $('#pills-time-view-tab').text(t_weeks + ' weeks ' + t_days + ' days remaining')
+                    $('#pills-time-view-tab').text(t_weeks + ' weeks ' + t_days + ' days remaining');
                 }else{
                     if(days>=1){
-                        $('#pills-time-view-tab').text(days + ' days remaining')
+                        $('#pills-time-view-tab').text(days + ' days remaining');
                     }else{
-                        $('#pills-time-view-tab').text(hours + ' hours remaining')
+                        $('#pills-time-view-tab').text(hours + ' hours remaining');
                     }
                 }
             }
@@ -521,6 +515,7 @@ $(function () {
             console.log("Fetch error: " + error);
         });
     }
+
     $('.connectedSortable').sortable({
         cancel: ".unsortable",
         update: function(e, ui) {
@@ -705,13 +700,13 @@ $(function () {
                 let lid = event_raw['parents']['leaf'];
                 let l_time = new Date(kanban_data.projects_accessible['leaf'][lid]['time']);
                 let e_time = new Date(event_raw['time']);
-                let start_time = e_time
+                let start_time = e_time;
                 let end_time = new Date((e_time).getTime() + 1000);
                 let all_day = false;
                 if (l_time.getFullYear() === e_time.getFullYear() && l_time.getMonth() === e_time.getMonth() && l_time.getDate() === e_time.getDate()){
                     start_time =  new Date();
                     end_time = l_time;
-                    all_day = true
+                    all_day = true;
                 }
                 let event_calendar =         {
                     id             : event_id,
