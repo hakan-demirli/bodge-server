@@ -145,6 +145,15 @@ $(function () {
             kanbanWriteBackend();
             createEventsFromKanban();
         }
+        type(id){
+            if(this.projects_accessible["root"][id]   !== undefined){return 'root'}
+            if(this.projects_accessible["branch"][id] !== undefined){return 'branch'}
+            if(this.projects_accessible["leaf"][id]   !== undefined){return 'leaf'}
+            if(this.projects_accessible["todo"][id]   !== undefined){return 'todo'}
+            if(this.projects_accessible["prog"][id]   !== undefined){return 'prog'}
+            if(this.projects_accessible["done"][id]   !== undefined){return 'done'}
+            throw new Error('No match found!');
+        }
     }
 
     function addEditCard(e){
@@ -524,13 +533,17 @@ $(function () {
         receive: function( e, ui ) {
             let dropped_card_body = ui.item.find(".card-saved-body");
             let card_id = dropped_card_body.attr('id');
+            let card_type = kanban_data.type(card_id);
             let body_name = e.target.id;
-            let txt = dropped_card_body.text();
-            let title = $(ui.item[0]).children('.card-header').children('#title').text();
-            let time = $(ui.item[0]).children('.card-header').children('#time').text();
+            let txt      = kanban_data.projects_accessible[card_type][card_id]['txt'];
+            let title    = kanban_data.projects_accessible[card_type][card_id]['title'];
+            let time     = kanban_data.projects_accessible[card_type][card_id]['time'];
+            let priority = kanban_data.projects_accessible[card_type][card_id]['priority'];
+
             switch(body_name){
                 case 'kanban-todo-body':
-                    kanban_data.add(card_id,'todo',txt,title,time);
+                    console.log('drop to do todo lol')
+                    kanban_data.add(card_id,'todo',txt,title,time,priority);
                     if(dropped_card_body.hasClass("prog")){
                         kanban_data.remove(card_id,'prog');
                         dropped_card_body.toggleClass('prog');
@@ -543,7 +556,7 @@ $(function () {
                     }
                 break;
                 case 'kanban-prog-body':
-                    kanban_data.add(card_id,'prog',txt,title,time);
+                    kanban_data.add(card_id,'prog',txt,title,time,priority);
                     if(dropped_card_body.hasClass("done")){
                         kanban_data.remove(card_id,'done');
                         dropped_card_body.toggleClass('done');
@@ -556,7 +569,7 @@ $(function () {
                     }
                 break;
                 case 'kanban-done-body':
-                    kanban_data.add(card_id,'done',txt,title,time);
+                    kanban_data.add(card_id,'done',txt,title,time,priority);
                     if(dropped_card_body.hasClass("prog")){
                         kanban_data.remove(card_id,'prog');
                         dropped_card_body.toggleClass('prog');
