@@ -27,6 +27,9 @@
 	--fc-list-event-hover-bg-color: #46535e;
     overflow: hidden;
 }
+#pills-timeline-view{
+    overflow-x: hidden !important;
+}
 .calendar-card{
     width: 100%;
 }
