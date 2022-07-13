@@ -21,10 +21,10 @@ $(function () {
         return ak;
     }
 
-    function editCard(row,date){
+    function editCard(row,date,summary){
         let ak = `
         <div class="form-group">
-            ${date ?(`<input type="text" placeholder="Summary" class="form-control" id="title">`):('')}
+            ${summary ?(`<input type="text" placeholder="Summary" class="form-control" id="title">`):('')}
             <textarea class="form-control" rows="${row}" placeholder="..." id="content"></textarea>
             ${date ?(`
                     <div class='input-group' id='datetimepicker1' data-td-target-input='nearest' data-td-target-toggle='nearest'>
@@ -81,7 +81,7 @@ $(function () {
                     this.projects_accessible[type][id] = this.projects[selected['root']]['childs'][id];
                     break;
                 case 'leaf':
-                    this.projects[selected['root']]['childs'][selected['branch']]['childs'][id] = {parents:{branch:selected['branch'],root:selected['root']},txt:txt,childs:{todo:{},prog:{},done:{}}};
+                    this.projects[selected['root']]['childs'][selected['branch']]['childs'][id] = {parents:{branch:selected['branch'],root:selected['root']},txt:txt,time:time,childs:{todo:{},prog:{},done:{}}};
                     this.projects_accessible['branch'][selected['branch']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'];
                     this.projects_accessible[type][id] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][id];
                     break;
@@ -127,7 +127,7 @@ $(function () {
     }
 
     function addEditCard(e){
-        let ak = editCard(e.data.extra.row,e.data.extra.date);
+        let ak = editCard(e.data.extra.row,e.data.extra.date,e.data.extra.summary);
         $(e.target.closest(`#${e.data.extra.name}-card`)).find(`#${e.data.extra.name}-body`).prepend(ak);
     }
 
@@ -173,9 +173,13 @@ $(function () {
         let txt = $(e.target.closest('.form-group')).children('#content').val();
         let title = $(e.target.closest('.form-group')).children('#title').val();
         let time = $(e.target.closest('.form-group')).children('.input-group').children('#clock-add-time').val();
+        if(time=="" && selected['leaf'] !== undefined){
+            console.log('here', selected['leaf']);
+            time = kanban_data.projects_accessible['leaf'][selected['leaf']]['time'];}
         let myguid = guid();
         let ak = savedCard(e.data.extra.header,e.data.extra.type,myguid,txt,e.data.extra.icon,title,time);
         let tmp = $(e.target.closest(`#${e.data.extra.name}-card`)).find(`#${e.data.extra.name}-body`);
+
         switch(e.data.extra.type) {
             case 'branch':
                 if(selected['root'] == ''){
@@ -290,7 +294,42 @@ $(function () {
             break;
             case 'leaf':
                 if(!leaf_sel.hasClass('bg-info')){leaf_sel.toggleClass('bg-info');}
+                updateRemaningTime(kanban_data.projects_accessible['leaf'][selected['leaf']]['time']);
             break;
+        }
+    }
+
+    function updateRemaningTime(time){
+        if (time == ""){
+            $('#pills-time-view-tab').text("");
+            return
+        }
+        let now = new Date();
+        let mdate = new Date(time);
+        let diff = mdate.getTime()-now.getTime()
+        if(diff<0){
+            $('#pills-time-view-tab').text('TIMEOUT')
+        }else{
+            let days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            let hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            let minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            let seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            let t_weeks = Math.floor(days / (7));
+            let t_days = Math.floor(days-t_weeks*7);
+            if((t_weeks)>=3){
+                $('#pills-time-view-tab').text(t_weeks + ' weeks remaining')
+            }else{
+                if(t_weeks>=1){
+                    $('#pills-time-view-tab').text(t_weeks + ' weeks ' + t_days + ' days remaining')
+                }else{
+                    if(days>=1){
+                        $('#pills-time-view-tab').text(days + ' days remaining')
+                    }else{
+                        $('#pills-time-view-tab').text(hours + ' hours remaining')
+                    }
+                }
+            }
         }
     }
 
@@ -522,14 +561,14 @@ $(function () {
 
     var kanban_data = new KanbanDataClass({}, {root:{},branch:{},leaf:{},todo:{},prog:{},done:{}});
 
-    $('#kanban-todo-card').children('.card-header').children('.card-tools').on("click",('.kanban-plus'),{ extra : {row:4,name:'kanban-todo',date:1}},addEditCard);
+    $('#kanban-todo-card').children('.card-header').children('.card-tools').on("click",('.kanban-plus'),{ extra : {row:4,name:'kanban-todo',date:1,summary:1}},addEditCard);
     $('#kanban-todo-body').on("click",('#kanban-add-button'),{ extra : {name:'kanban-todo',icon:"fa-solid fa-square-xmark",header:1,type:'todo'}},saveCard);
     $('#kanban-todo-body').on("click",('#kanban-cancel-button'),removeCard);
     $('.card-body, .fa-square-xmark').on("click",('.fa-square-xmark'),removeAddedCard);
 
-    $('#kanban-projects-card,#kanban-projects-root-button  ').on("click",('#kanban-projects-root-button  '),{ extra : {row:1,name:'kanban-projects',date:0}},addEditCard);
-    $('#kanban-projects-card,#kanban-projects-branch-button').on("click",('#kanban-projects-branch-button'),{ extra : {row:1,name:'kanban-projects',date:0}},addEditCard);
-    $('#kanban-projects-card,#kanban-projects-leaf-button  ').on("click",('#kanban-projects-leaf-button  '),{ extra : {row:1,name:'kanban-projects',date:0}},addEditCard);
+    $('#kanban-projects-card,#kanban-projects-root-button  ').on("click",('#kanban-projects-root-button  '),{ extra : {row:1,name:'kanban-projects',date:0,summary:0}},addEditCard);
+    $('#kanban-projects-card,#kanban-projects-branch-button').on("click",('#kanban-projects-branch-button'),{ extra : {row:1,name:'kanban-projects',date:0,summary:0}},addEditCard);
+    $('#kanban-projects-card,#kanban-projects-leaf-button  ').on("click",('#kanban-projects-leaf-button  '),{ extra : {row:1,name:'kanban-projects',date:1,summary:0}},addEditCard);
     $('.kanban-projects-root  ').on("click",('#kanban-add-button'),{extra : {name:'kanban-projects',icon:"fa-solid fa-rectangle-xmark",header:0,type:'root'}},saveCard);
     $('.kanban-projects-branch').on("click",('#kanban-add-button'),{extra : {name:'kanban-projects',icon:"fa-solid fa-rectangle-xmark",header:0,type:'branch'}},saveCard);
     $('.kanban-projects-leaf  ').on("click",('#kanban-add-button'),{extra : {name:'kanban-projects',icon:"fa-solid fa-rectangle-xmark",header:0,type:'leaf'}},saveCard);
@@ -624,7 +663,12 @@ $(function () {
         // Movement of sidebar is slower than the render speed. Which causes an incorrect render.
         // Hence, call the render function after sidebar is fully extended. Which means waiting a little bit before requesting render.
         myTimeout = setTimeout(function(){calendar.updateSize();clearTimeout(myTimeout);}, 100);
+        setTimeout(calendarSizeFix, 200); // Ubuntu 20 LTS specific fix
     });
+
+    function calendarSizeFix(){
+        myTimeout = setTimeout(function(){calendar.updateSize();clearTimeout(myTimeout);}, 100);
+    }
 
     function createEventsFromKanban(){
         calendar.removeAllEvents();
@@ -632,13 +676,24 @@ $(function () {
         for(let type in types){
             for(let event_id in kanban_data.projects_accessible[type]){
                 let event_raw = kanban_data.projects_accessible[type][event_id];
+                let lid = event_raw['parents']['leaf'];
+                let l_time = new Date(kanban_data.projects_accessible['leaf'][lid]['time']);
+                let e_time = new Date(event_raw['time']);
+                let start_time = e_time
+                let end_time = new Date((e_time).getTime() + 1000);
+                let all_day = false;
+                if (l_time.getFullYear() === e_time.getFullYear() && l_time.getMonth() === e_time.getMonth() && l_time.getDate() === e_time.getDate()){
+                    start_time =  new Date();
+                    end_time = l_time;
+                    all_day = true
+                }
                 let event_calendar =         {
                     id             : event_id,
                     title          : event_raw['title'],
                     groupId        : type,
-                    start          : new Date(event_raw['time']),
-                    end            : new Date((new Date(event_raw['time'])).getTime() + 1000),
-                    allDay         : false,
+                    start          : start_time,
+                    end            : end_time,
+                    allDay         : all_day,
                     backgroundColor: '#ff73b7',
                     borderColor    : '#ff7fff'
                 };
