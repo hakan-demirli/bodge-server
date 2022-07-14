@@ -3,9 +3,10 @@
 
 <!-- Specific Page CSS goes HERE  -->
 {% block stylesheets %}
-<link rel="stylesheet" href="/static/plugins/fullcalendar/main.css"/>
-<link href="/kanban/static/css/kanban.css" type="text/css" rel="stylesheet" />
+<link href="/static/plugins/fullcalendar/main.css" rel="stylesheet" />
+<link href="/kanban/static/css/kanban.css" rel="stylesheet" />
 <link href="/static/plugins/tempusdominus/css/tempus-dominus.min.css" rel="stylesheet">
+<link href="/static/plugins/datatables/dataTables.css" rel="stylesheet">
 {% endblock stylesheets %}
 
 {% block content %}
@@ -62,6 +63,9 @@
             <li class="nav-item" role="presentation">
               <button class="nav-link" id="pills-timeline-view-tab" data-bs-toggle="pill" data-bs-target="#pills-timeline-view" type="button" role="tab" aria-controls="pills-timeline-view" aria-selected="false">Timeline-view</button>
             </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="pills-table-view-tab" data-bs-toggle="pill" data-bs-target="#pills-table-view" type="button" role="tab" aria-controls="pills-table-view" aria-selected="false">Table-view</button>
+            </li>
             <li class="nav-item  ml-auto" role="presentation">
               <button class="nav-link disabled" id="pills-time-view-tab" data-bs-toggle="pill" data-bs-target="#pills-time-view" type="button" role="tab" aria-controls="pills-time-view" aria-selected="false"></button>
             </li>
@@ -108,10 +112,33 @@
             </div>
             <div class="tab-pane fade overflow-auto h-100" id="pills-timeline-view" role="tabpanel" aria-labelledby="pills-timeline-view-tab" tabindex="0">
               <div class="row">
-                <div class="tab-pane active" id="timeline">
+                <div class="tab-pane" id="timeline">
                   <div class="timeline">
-
                   </div>
+                </div>
+              </div>
+            </div>
+            <div class="tab-pane fade overflow-auto h-100" id="pills-table-view" role="tabpanel" aria-labelledby="pills-table-view-tab" tabindex="0">
+              <div class="row">
+                <div class="tab-pane">
+                  <table id="table_id" class="display" class="table table-bordered table-hover dataTable dtr-inline" class="cell-border" >
+                    <thead>
+                        <tr>
+                            <th>Column 1</th>
+                            <th>Column 2</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Row 1 Data 1</td>
+                            <td>Row 1 Data 2</td>
+                        </tr>
+                        <tr>
+                            <td>Row 2 Data 1</td>
+                            <td>Row 2 Data 2</td>
+                        </tr>
+                    </tbody>
+                </table>
                 </div>
               </div>
             </div>
@@ -131,5 +158,6 @@
 <script src="/static/plugins/jquery-ui/jquery-ui.min.js"></script>
 <script src="/static/plugins/popper/popper.min.js"></script>
 <script src="/static/plugins/tempusdominus/js/tempus-dominus.min.js"></script>
+<script src="/static/plugins/datatables/dataTables.js"></script>
 {% endblock javascripts %}
 

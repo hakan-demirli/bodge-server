@@ -123,8 +123,7 @@ $(function () {
                     this.projects_accessible[type][id] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id];
                     break;
             }
-            kanbanWriteBackend();
-            createEventsFromKanban();
+            this.recreateProjectsAccessible();
         }
         remove(id,type){
             switch(type) {
@@ -150,8 +149,6 @@ $(function () {
                     break;
             }
             this.recreateProjectsAccessible();
-            kanbanWriteBackend();
-            createEventsFromKanban();
         }
         type(id){
             if(this.projects_accessible["root"][id]   !== undefined){return 'root'}
@@ -180,6 +177,8 @@ $(function () {
         if(body.hasClass('todo')){kanban_data.remove(id,'todo');}
         if(body.hasClass('prog')){kanban_data.remove(id,'prog');}
         if(body.hasClass('done')){kanban_data.remove(id,'done');}
+        kanbanWriteBackend();
+        createTimeline();
     }
 
     function removeAddedProjectNode(e) {
@@ -203,6 +202,8 @@ $(function () {
                     projects_selected[kanban_data.projects_accessible['leaf'][id]['parents']['root']][2] = '';
                     kanban_data.remove(id,'leaf');
                 }
+                kanbanWriteBackend();
+                createTimeline();
             }
         }
     }
@@ -213,7 +214,6 @@ $(function () {
         let time     = $(e.target.closest('.form-group')).children('.input-group').children('#clock-add-time').val();
         let priority = $(e.target.closest('.form-group')).children('.input-group').children('.input-group-append').children('.form-select').val();
         if(time=="" && selected['leaf'] !== undefined){
-            console.log('here', selected['leaf']);
             time = kanban_data.projects_accessible['leaf'][selected['leaf']]['time'];}
         let myguid = guid();
         let ak = savedCard(e.data.extra.header,e.data.extra.type,myguid,txt,e.data.extra.icon,title,time,priority);
@@ -246,6 +246,7 @@ $(function () {
         tmp.prepend(ak);
         removeCard(e);
         kanban_data.add(myguid,e.data.extra.type,txt,title,time,priority,prog_time,done_time);
+        createTimeline();
         selectCardBackend(e.data.extra.type,myguid);
         recreateRightColumns(e.data.extra.type);
         selectCardFrontend(e.data.extra.type);
@@ -527,6 +528,7 @@ $(function () {
                     recreateRightColumns('root');
                 selectCardFrontend('root');
                 createTimeline();
+                initialCalendarRender();
             });
         })
         .catch(function (error) {
@@ -575,10 +577,9 @@ $(function () {
             let prog_time = kanban_data.projects_accessible[card_type][card_id]['prog_time'];
             let done_time = kanban_data.projects_accessible[card_type][card_id]['done_time'];
             let new_guid = guid();
-            console.log(card_type, " ", card_id, " ");
             kanban_data.remove(card_id,card_type);
             dropped_card_body.toggleClass(card_type);
-            console.log(dropped_card_body.attr('id',new_guid));
+            dropped_card_body.attr('id',new_guid)
 
             switch(body_name){
                 case 'kanban-todo-body':
@@ -594,6 +595,8 @@ $(function () {
                     kanban_data.add(new_guid,'done',txt,title,time,priority,prog_time,formatDate(new Date()));
                 break;
             }
+            kanbanWriteBackend();
+            createTimeline();
         },
         placeholder: 'sort-highlight',
         connectWith: '.connectedSortable',
@@ -694,8 +697,6 @@ $(function () {
     });
 
     var myTimeout;
-    setTimeout(initialCalendarRender, 1000);
-    setTimeout(initialCalendarRender, 2000);
     function initialCalendarRender(){
         // calendar is distorted at the beginning. This is an official bug.
         // Fix it by rendering it few times at the beginning.
@@ -812,11 +813,7 @@ $(function () {
         }
         let branch_colors = distinctColors(Object.keys(parent_branches).length);
         let leaf_colors = distinctColors(Object.keys(parent_leafs).length);
-
-        console.log(leaf_colors)
         leaf_colors = arrayRotate(leaf_colors,Math.floor(leaf_colors.length/4));
-
-        console.log(leaf_colors)
         let ii = 0;
         for(let key in parent_branches){
             parent_branches[key] = `rgb(${branch_colors[ii][0]},${branch_colors[ii][1]},${branch_colors[ii][2]})`;
@@ -856,4 +853,9 @@ $(function () {
             selectCardFrontend(type);
         }
     }
+
+    $(document).ready( function () {
+        $('#table_id').DataTable();
+    });
+
 })
