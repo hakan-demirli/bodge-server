@@ -718,19 +718,20 @@ $(function () {
 
     function createEventsFromKanban(){
         calendar.removeAllEvents();
-        let types = {todo:'', prog:''};
+        let types = {todo:'', prog:'',done:''};
         for(let type in types){
             for(let event_id in kanban_data.projects_accessible[type]){
                 let event_raw = kanban_data.projects_accessible[type][event_id];
                 let lid = event_raw['parents']['leaf'];
                 let l_time = new Date(kanban_data.projects_accessible['leaf'][lid]['time']);
                 let e_time = new Date(event_raw['time']);
+                let e_done_time = new Date(event_raw['done_time']);
                 let start_time = e_time;
                 let end_time = new Date((e_time).getTime() + 1000);
                 let all_day = false;
                 if (l_time.getFullYear() === e_time.getFullYear() && l_time.getMonth() === e_time.getMonth() && l_time.getDate() === e_time.getDate()){
                     start_time =  new Date();
-                    end_time = l_time;
+                    end_time = type==='done' ? e_done_time : l_time;
                     all_day = true;
                 }
                 let event_calendar =         {
@@ -777,12 +778,20 @@ $(function () {
                             <span class="bg-danger">The Dark Age</span>
                         </div>`;
 
-    function timelineItem(header,body,id,time,icon,branch_color,item_color){
+    function timelineItem(header,body,id,time,priority,icon,branch_color,item_color){
+        let bg_color = ''
+        switch(priority){
+            case "5": bg_color = 'style="border-bottom: 1px solid rgb(255,   0,   0);"'; break;
+            case "4": bg_color = 'style="border-bottom: 1px solid rgb(255, 150,   0);"'; break;
+            case "3": bg_color = 'style="border-bottom: 1px solid rgb(100, 250,   0);"'; break;
+            case "2": bg_color = 'style="border-bottom: 1px solid rgb( 50, 190, 140);"'; break;
+            case "1": bg_color = ''; break;
+        }
         let ak = `  <div>
                         <i class="${icon}" style="color:${item_color}; background-color:${branch_color}; text-shadow: 0 0 4px #000000;"></i>
                         <div class="timeline-item" id="${id}">
                             <span class="time">${time}\xa0\xa0<i class="far fa-clock"></i></span>
-                            <h3 class="timeline-header">${header}</h3>
+                            <h3 class="timeline-header" ${bg_color}>${header}</h3>
                             <div class="timeline-body">${body}</div>
                         </div>
                     </div>`;
@@ -827,7 +836,9 @@ $(function () {
                 item['txt'],
                 item['my_id'],
                 item['done_time'],
-                "fas fa-flag",parent_branches[item['parents']['branch']],parent_leafs[item['parents']['leaf']])
+                item['priority'],
+                "fas fa-flag",
+                parent_branches[item['parents']['branch']],parent_leafs[item['parents']['leaf']])
             tmp = ak + tmp;
             ii = ii + 1;
         }
