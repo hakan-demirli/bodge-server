@@ -54,6 +54,9 @@ table.dataTable tfoot th {
 .dataTables_wrapper .dataTables_paginate {
     color: #fff !important;
 }
+#table_id{
+    width: 100% !important;
+}
 .calendar-card{
     width: 100%;
 }

@@ -860,22 +860,38 @@ $(function () {
 
     function initializeTable(){
         let projects_table = $('#table_id').DataTable();
+        projects_table.column(0).visible(false);
         fillTable(projects_table);
     }
 
     function fillTable(projects_table){
         projects_table.clear();
-        let types = {todo:'', prog:'',done:''};
+        let types = {todo:'', prog:''};
         for(let type in types){
             for(let event_id in kanban_data.projects_accessible[type]){
                 let event_raw = kanban_data.projects_accessible[type][event_id];
-                projects_table.row.add([event_raw['title'],
+                projects_table.row.add([event_id,
+                                        event_raw['title'],
                                         event_raw['priority'],
                                         event_raw['prog_time'],
-                                        event_raw['done_time'],
                                         event_raw['txt']]);
             }
         }
         projects_table.draw(false);
     }
+
+    $('#table_id tbody').on('click', 'tr', function (e) {
+        e.preventDefault();
+        let currentRow = $(this).closest("tr");
+        let data = $('#table_id').DataTable().row(currentRow).data();
+        let id = data[0];
+        let type = kanban_data.type(id);
+        let itm = kanban_data.projects_accessible[type][id];
+        let types = {root:'', branch:'', leaf:''}; //order matters
+        for(let type in types){
+            selectCardBackend(type,itm['parents'][type]);
+            recreateRightColumns(type);
+            selectCardFrontend(type);
+        }
+    });
 })
