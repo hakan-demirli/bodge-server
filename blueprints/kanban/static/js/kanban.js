@@ -525,6 +525,7 @@ $(function () {
                 if( selected['root'] != '')
                     recreateRightColumns('root');
                 selectCardFrontend('root');
+                initializeTable();
             });
         })
         .catch(function (error) {
@@ -696,7 +697,6 @@ $(function () {
     function renderCalendar(){
         // calendar is distorted at the beginning. This is an official bug.
         // Fix it by rendering it few times at the beginning.
-        console.log('renderin the calendar.')
         createEventsFromKanban();
         calendar.render();
     }
@@ -720,7 +720,6 @@ $(function () {
         calendar.removeAllEvents();
         let types = {todo:'', prog:'',done:''};
         for(let type in types){
-            console.log(kanban_data.projects_accessible[type])
             for(let event_id in kanban_data.projects_accessible[type]){
                 let event_raw = kanban_data.projects_accessible[type][event_id];
                 let lid = event_raw['parents']['leaf'];
@@ -728,8 +727,9 @@ $(function () {
                 let e_time = new Date(event_raw['time']);
                 let e_done_time = new Date(event_raw['done_time']);
                 let start_time = e_time;
-                let end_time = new Date((e_time).getTime() + 1000);
+                let end_time = type==='done' ? e_done_time : new Date((e_time).getTime() + 1000);
                 let all_day = false;
+
                 if (l_time.getFullYear() === e_time.getFullYear() && l_time.getMonth() === e_time.getMonth() && l_time.getDate() === e_time.getDate()){
                     start_time =  new Date();
                     end_time = type==='done' ? e_done_time : l_time;
@@ -856,8 +856,26 @@ $(function () {
         }
     }
 
-    $(document).ready( function () {
-        $('#table_id').DataTable();
-    });
+    $('.nav-item').on('click','#pills-table-view-tab',fillTable);
 
+    function initializeTable(){
+        let projects_table = $('#table_id').DataTable();
+        fillTable(projects_table);
+    }
+
+    function fillTable(projects_table){
+        projects_table.clear();
+        let types = {todo:'', prog:'',done:''};
+        for(let type in types){
+            for(let event_id in kanban_data.projects_accessible[type]){
+                let event_raw = kanban_data.projects_accessible[type][event_id];
+                projects_table.row.add([event_raw['title'],
+                                        event_raw['priority'],
+                                        event_raw['prog_time'],
+                                        event_raw['done_time'],
+                                        event_raw['txt']]);
+            }
+        }
+        projects_table.draw(false);
+    }
 })
