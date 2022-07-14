@@ -78,6 +78,7 @@ $(function () {
             this.projects_accessible = proj_ac;
         }
         recreateProjectsAccessible(){
+            this.projects_accessible = {root: {},branch: {},leaf: {},todo:{},prog:{},done:{}};
             for(let root_id in this.projects){ // for every root
                 for(let branch_id in this.projects[root_id]['childs']){ // for every branch of the root
                     this.projects_accessible['branch'][branch_id] = this.projects[root_id]['childs'][branch_id];
@@ -178,7 +179,6 @@ $(function () {
         if(body.hasClass('prog')){kanban_data.remove(id,'prog');}
         if(body.hasClass('done')){kanban_data.remove(id,'done');}
         kanbanWriteBackend();
-        createTimeline();
     }
 
     function removeAddedProjectNode(e) {
@@ -203,7 +203,6 @@ $(function () {
                     kanban_data.remove(id,'leaf');
                 }
                 kanbanWriteBackend();
-                createTimeline();
             }
         }
     }
@@ -246,7 +245,6 @@ $(function () {
         tmp.prepend(ak);
         removeCard(e);
         kanban_data.add(myguid,e.data.extra.type,txt,title,time,priority,prog_time,done_time);
-        createTimeline();
         selectCardBackend(e.data.extra.type,myguid);
         recreateRightColumns(e.data.extra.type);
         selectCardFrontend(e.data.extra.type);
@@ -527,8 +525,6 @@ $(function () {
                 if( selected['root'] != '')
                     recreateRightColumns('root');
                 selectCardFrontend('root');
-                createTimeline();
-                initialCalendarRender();
             });
         })
         .catch(function (error) {
@@ -567,16 +563,16 @@ $(function () {
         },
         receive: function( e, ui ) {
             let dropped_card_body = ui.item.find(".card-saved-body");
-            let card_id = dropped_card_body.attr('id');
+            let card_id   = dropped_card_body.attr('id');
             let card_type = kanban_data.type(card_id);
             let body_name = e.target.id;
-            let txt      = kanban_data.projects_accessible[card_type][card_id]['txt'];
-            let title    = kanban_data.projects_accessible[card_type][card_id]['title'];
-            let time     = kanban_data.projects_accessible[card_type][card_id]['time'];
-            let priority = kanban_data.projects_accessible[card_type][card_id]['priority'];
+            let txt       = kanban_data.projects_accessible[card_type][card_id]['txt'];
+            let title     = kanban_data.projects_accessible[card_type][card_id]['title'];
+            let time      = kanban_data.projects_accessible[card_type][card_id]['time'];
+            let priority  = kanban_data.projects_accessible[card_type][card_id]['priority'];
             let prog_time = kanban_data.projects_accessible[card_type][card_id]['prog_time'];
             let done_time = kanban_data.projects_accessible[card_type][card_id]['done_time'];
-            let new_guid = guid();
+            let new_guid  = guid();
             kanban_data.remove(card_id,card_type);
             dropped_card_body.toggleClass(card_type);
             dropped_card_body.attr('id',new_guid)
@@ -596,7 +592,6 @@ $(function () {
                 break;
             }
             kanbanWriteBackend();
-            createTimeline();
         },
         placeholder: 'sort-highlight',
         connectWith: '.connectedSortable',
@@ -604,6 +599,7 @@ $(function () {
         forcePlaceholderSize: true,
         zIndex: 999999
     })
+
     $('.connectedSortable .card-header-drag').css('cursor', 'move');
 
     window.onload = kanbanReadBackend();
@@ -697,9 +693,10 @@ $(function () {
     });
 
     var myTimeout;
-    function initialCalendarRender(){
+    function renderCalendar(){
         // calendar is distorted at the beginning. This is an official bug.
         // Fix it by rendering it few times at the beginning.
+        console.log('renderin the calendar.')
         createEventsFromKanban();
         calendar.render();
     }
@@ -717,10 +714,13 @@ $(function () {
         myTimeout = setTimeout(function(){calendar.updateSize();clearTimeout(myTimeout);}, 100);
     }
 
+    $('.nav-item').on('click','#pills-calendar-view-tab',renderCalendar);
+
     function createEventsFromKanban(){
         calendar.removeAllEvents();
         let types = {todo:'', prog:'',done:''};
         for(let type in types){
+            console.log(kanban_data.projects_accessible[type])
             for(let event_id in kanban_data.projects_accessible[type]){
                 let event_raw = kanban_data.projects_accessible[type][event_id];
                 let lid = event_raw['parents']['leaf'];
@@ -735,7 +735,7 @@ $(function () {
                     end_time = type==='done' ? e_done_time : l_time;
                     all_day = true;
                 }
-                let event_calendar =         {
+                let event_calendar = {
                     id             : event_id,
                     title          : event_raw['title'],
                     groupId        : type,
@@ -844,6 +844,8 @@ $(function () {
     }
 
     $('.timeline').on('click','.timeline-item',selectLeftSide);
+    $('.nav-item').on('click','#pills-timeline-view-tab',createTimeline);
+
     function selectLeftSide(e){
         let itm = kanban_data.projects_accessible['done'][$(e.currentTarget).attr('id')];
         let types = {root:'', branch:'', leaf:''}; //order matters
