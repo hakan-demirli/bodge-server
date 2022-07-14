@@ -777,11 +777,11 @@ $(function () {
                             <span class="bg-danger">The Dark Age</span>
                         </div>`;
 
-    function timelineItem(header,body,time,icon,branch_color,item_color){
+    function timelineItem(header,body,id,time,icon,branch_color,item_color){
         let ak = `  <div>
-                        <i class="${icon}" style="color:${item_color}; background-color:${branch_color};      text-shadow: 0 0 4px #000000;"></i>
-                        <div class="timeline-item">
-                            <span class="time"><i class="far fa-clock"></i>${time}</span>
+                        <i class="${icon}" style="color:${item_color}; background-color:${branch_color}; text-shadow: 0 0 4px #000000;"></i>
+                        <div class="timeline-item" id="${id}">
+                            <span class="time">${time}\xa0\xa0<i class="far fa-clock"></i></span>
                             <h3 class="timeline-header">${header}</h3>
                             <div class="timeline-body">${body}</div>
                         </div>
@@ -796,6 +796,7 @@ $(function () {
         let parent_leafs = {};
         let done_dic = kanban_data.projects_accessible['done'];
         for(let key in done_dic){
+            done_dic[key]['my_id'] = key;
             chronicle_pro.push(done_dic[key]);
             parent_branches[done_dic[key]['parents']['branch']] = '';
             parent_leafs[done_dic[key]['parents']['leaf']] = '';
@@ -824,6 +825,7 @@ $(function () {
         for (const item of chronicle_pro) {
             let ak = timelineItem(item['title'],
                 item['txt'],
+                item['my_id'],
                 item['done_time'],
                 "fas fa-flag",parent_branches[item['parents']['branch']],parent_leafs[item['parents']['leaf']])
             tmp = ak + tmp;
@@ -831,5 +833,16 @@ $(function () {
         }
         tmp = timeline_beg + tmp + timeline_end;
         $('.timeline').html(tmp);
+    }
+
+    $('.timeline').on('click','.timeline-item',selectLeftSide);
+    function selectLeftSide(e){
+        let itm = kanban_data.projects_accessible['done'][$(e.currentTarget).attr('id')];
+        let types = {root:'', branch:'', leaf:''}; //order matters
+        for(let type in types){
+            selectCardBackend(type,itm['parents'][type]);
+            recreateRightColumns(type);
+            selectCardFrontend(type);
+        }
     }
 })
