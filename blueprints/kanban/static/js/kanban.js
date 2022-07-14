@@ -856,7 +856,7 @@ $(function () {
         }
     }
 
-    $('.nav-item').on('click','#pills-table-view-tab',fillTable);
+    $('.nav-item').on('click','#pills-table-view-tab',initializeTable);
 
     function initializeTable(){
         let projects_table = $('#table_id').DataTable();
