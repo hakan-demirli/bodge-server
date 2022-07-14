@@ -6,7 +6,7 @@ $(function () {
                     <textarea class="form-control" rows="1" placeholder=""></textarea>
                     <button type="submit" class="btn btn-primary w-50" id="kanban-add-button"><i class="fa-solid fa-check"></i></button>
                     <button type="submit" class="btn btn-secondary float-right w-50" id="kanban-cancel-button"><i class="fas fa-times"></i></button>
-                </div>`; // Size of the cards expand/shrink if smth added/removed to the empty column. Hence, add an invisible card to prevent it.
+                </div>`; // Size of the columns expand/shrink if smth added/removed to the empty column. Hence, add an invisible card to prevent it.
 
     function savedCard(header,type,guid,txt,icon,title,time,priority){
         let bg_color = '';
@@ -526,6 +526,7 @@ $(function () {
                 if( selected['root'] != '')
                     recreateRightColumns('root');
                 selectCardFrontend('root');
+                createTimeline();
             });
         })
         .catch(function (error) {
@@ -745,5 +746,90 @@ $(function () {
                 calendar.addEvent(event_calendar);
             }
         }
+    }
+
+    function hsv2Rgb(h,s,v){
+        let f= (n,k=(n+h/60)%6) => v - v*s*Math.max( Math.min(k,4-k,1), 0);
+        return [f(5),f(3),f(1)];
+    }
+
+    function distinctColors(count) {
+        var colors = [];
+        for(let hue = 0; hue < 360; hue += 360 / count) {
+            let rgb = hsv2Rgb(hue, 0.8, 1);
+            rgb = rgb.map(x => Math.floor(x * 255));
+            colors.push(rgb);
+        }
+        return colors;
+    }
+
+    function arrayRotate(arr, count) {
+        count -= arr.length * Math.floor(count / arr.length);
+        arr.push.apply(arr, arr.splice(0, count));
+        return arr;
+    }
+
+    let timeline_beg = `<div class="time-label">
+                            <span class="bg-success">Now</span>
+                        </div>`;
+
+    let timeline_end = `<div class="time-label">
+                            <span class="bg-danger">The Dark Age</span>
+                        </div>`;
+
+    function timelineItem(header,body,time,icon,branch_color,item_color){
+        let ak = `  <div>
+                        <i class="${icon}" style="color:${item_color}; background-color:${branch_color};      text-shadow: 0 0 4px #000000;"></i>
+                        <div class="timeline-item">
+                            <span class="time"><i class="far fa-clock"></i>${time}</span>
+                            <h3 class="timeline-header">${header}</h3>
+                            <div class="timeline-body">${body}</div>
+                        </div>
+                    </div>`;
+        return ak;
+    }
+
+    function createTimeline(){
+        let tmp = '';
+        let chronicle_pro = [];
+        let parent_branches = {};
+        let parent_leafs = {};
+        let done_dic = kanban_data.projects_accessible['done'];
+        for(let key in done_dic){
+            chronicle_pro.push(done_dic[key]);
+            parent_branches[done_dic[key]['parents']['branch']] = '';
+            parent_leafs[done_dic[key]['parents']['leaf']] = '';
+        }
+        let branch_colors = distinctColors(Object.keys(parent_branches).length);
+        let leaf_colors = distinctColors(Object.keys(parent_leafs).length);
+
+        console.log(leaf_colors)
+        leaf_colors = arrayRotate(leaf_colors,Math.floor(leaf_colors.length/4));
+
+        console.log(leaf_colors)
+        let ii = 0;
+        for(let key in parent_branches){
+            parent_branches[key] = `rgb(${branch_colors[ii][0]},${branch_colors[ii][1]},${branch_colors[ii][2]})`;
+            ii = ii + 1;
+        }
+        ii = 0;
+        for(let key in parent_leafs){
+            parent_leafs[key] = `rgb(${leaf_colors[ii][0]},${leaf_colors[ii][1]},${leaf_colors[ii][2]})`;
+            ii = ii + 1;
+        }
+        chronicle_pro.sort(function(a,b) {
+            return new Date(a.done_time).getTime() - new Date(b.done_time).getTime()
+        });
+        ii = 0;
+        for (const item of chronicle_pro) {
+            let ak = timelineItem(item['title'],
+                item['txt'],
+                item['done_time'],
+                "fas fa-flag",parent_branches[item['parents']['branch']],parent_leafs[item['parents']['leaf']])
+            tmp = ak + tmp;
+            ii = ii + 1;
+        }
+        tmp = timeline_beg + tmp + timeline_end;
+        $('.timeline').html(tmp);
     }
 })
