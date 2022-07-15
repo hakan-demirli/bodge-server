@@ -55,7 +55,13 @@ $(function () {
                         </span>
                     </div>
                     <script>
-                        new tempusDominus.TempusDominus(document.getElementById('datetimepicker1'));
+                        new tempusDominus.TempusDominus(document.getElementById('datetimepicker1'),{
+                            display: {
+                                      components: {
+                                        useTwentyfourHour: true
+                                      }
+                                     }
+                        });
                     </script>
                     `):('')}
             <button type="submit" class="btn btn-primary w-50" id="kanban-add-button"><i class="fa-solid fa-check"></i></button>
@@ -539,18 +545,8 @@ $(function () {
         var sYear = newDate.getFullYear();
         var sHour = newDate.getHours();
         var sMinute = padValue(newDate.getMinutes());
-        var sAMPM = "AM";
-        var iHourCheck = parseInt(sHour);
-
-        if (iHourCheck > 12) {
-            sAMPM = "PM";
-            sHour = iHourCheck - 12;
-        }
-        else if (iHourCheck === 0) {
-            sHour = "12";
-        }
         sHour = padValue(sHour);
-        return sMonth + "/" + sDay + "/" + sYear + ", " + sHour + ":" + sMinute + " " + sAMPM;
+        return sMonth + "/" + sDay + "/" + sYear + ", " + sHour + ":" + sMinute;
     }
 
     function padValue(value) {
@@ -685,6 +681,11 @@ $(function () {
             listDay: { buttonText: 'list day' },
             listWeek: { buttonText: 'list week' },
             listMonth: { buttonText: 'list month' }
+        },
+        eventTimeFormat: {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false
         },
         themeSystem: 'bootstrap',
         firstDay: 1,
