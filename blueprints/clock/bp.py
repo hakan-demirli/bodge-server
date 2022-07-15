@@ -9,7 +9,7 @@ class MyBlueprint():
                 url_prefix='/clock',
                 template_folder='templates',
                 static_folder='static')
-    user_data_path = Path(__file__).parent / 'clock.json'
+    user_data_path = Path(__file__).parent / '../../data/clock.json'
     icon = 'fa-solid fa-table-columns'
     page = 0
     card = 1

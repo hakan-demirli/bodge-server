@@ -10,7 +10,7 @@ class MyBlueprint():
                 url_prefix='/script_launcher',
                 template_folder='templates',
                 static_folder='static')
-    user_data_path = Path(__file__).parent / 'script_launcher.json'
+    user_data_path = Path(__file__).parent / '../../data/script_launcher.json'
     icon = 'fa-solid fa-table-columns'
     page = 0
     card = 1

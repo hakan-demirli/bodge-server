@@ -10,27 +10,23 @@ __pycache__/
 *.db
 *.sqlite3
 *.log
+.vscode/symbols.json
+data/
 
 # venv
 env
 venv
-*.ps1
 
 # other
 .DS_Store
 *.lnk
 *.json
+*.jason
+*.ps1
+
 # sphinx docs
 _build
 _static
 _templates
 
-# javascript
-package-lock.json
-.vscode/symbols.json
 
-apps/static/assets/node_modules
-apps/static/assets/yarn.lock
-apps/static/assets/.temp
-
-apps/py_plugins/todo_plugin/todo_list.json

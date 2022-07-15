@@ -9,7 +9,7 @@ class MyBlueprint():
                 url_prefix='/dashboard',
                 template_folder='templates',
                 static_folder='static')
-    user_data_path = Path(__file__).parent / 'dashboard.json'
+    user_data_path = Path(__file__).parent / '../../data/dashboard.json'
     icon = 'fa-solid fa-border-all'
     page = 1
     card = 0

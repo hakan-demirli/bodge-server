@@ -9,7 +9,7 @@ class MyBlueprint():
                 url_prefix='/kanban',
                 template_folder='templates',
                 static_folder='static')
-    user_data_path = Path(__file__).parent / 'kanban.json'
+    user_data_path = Path(__file__).parent / '../../data/kanban.json'
     icon = 'fa-solid fa-table-columns'
     page = 1
     card = 0

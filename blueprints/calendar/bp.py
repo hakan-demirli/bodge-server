@@ -9,7 +9,7 @@ class MyBlueprint():
                 url_prefix='/calendar',
                 template_folder='templates',
                 static_folder='static')
-    user_data_path = Path(__file__).parent / 'calendar.json'
+    user_data_path = Path(__file__).parent / '../../data/calendar.json'
     icon = 'fa-solid fa-border-all'
     page = 1
     card = 0

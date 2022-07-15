@@ -9,7 +9,7 @@ class MyBlueprint():
                 url_prefix='/settings',
                 template_folder='templates',
                 static_folder='static')
-    user_data_path = Path(__file__).parent / 'settings.json'
+    user_data_path = Path(__file__).parent / '../../data/settings.json'
     icon = 'fa-solid fa-table-columns'
     page = 1
     card = 0
