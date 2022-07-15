@@ -2,11 +2,70 @@
 $(function () {
 'use strict'
 
-    var fuckcss = `<div class="form-group" style="  visibility: hidden; width: 9%;">
+    const fuckcss = `<div class="form-group" style="  visibility: hidden; width: 9%;">
                     <textarea class="form-control" rows="1" placeholder=""></textarea>
-                    <button type="submit" class="btn btn-primary w-50" id="kanban-add-button"><i class="fa-solid fa-check"></i></button>
-                    <button type="submit" class="btn btn-secondary float-right w-50" id="kanban-cancel-button"><i class="fas fa-times"></i></button>
+                    <button type="submit" class="btn btn-primary w-50" ><i class="fa-solid fa-check"></i></button>
+                    <button type="submit" class="btn btn-secondary float-right w-50" ><i class="fas fa-times"></i></button>
                 </div>`; // Size of the columns expand/shrink if smth added/removed to the empty column. Hence, add an invisible card to prevent it.
+
+    const subtasks_footer = `
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <textarea class="form-control" rows="2" placeholder="..." id="content"></textarea>
+                                    <span class="input-group-append">
+                                        <button type="submit" class="btn btn-primary" id="subtasks-add-button"><i class="fa-solid fa-check"></i></button>
+                                        <button type="submit" class="btn btn-secondary float-right" id="subtasks-cancel-button"><i class="fas fa-times"></i></button>
+                                    </span>
+                                </div>
+                            </div>`;
+
+    function savedSubtask(guid,done,txt){
+        let ak = `\
+        <li id="${guid}">\
+            <span class="handle">\
+                <i class="fas fa-ellipsis-v"></i>\
+                <i class="fas fa-ellipsis-v"></i>\
+            </span>\
+            <div  class="icheck-success d-inline ml-2">\
+                <input type="checkbox" value="" name="todo${guid}" id="todoCheck${guid}" ${done ? "checked":""}>\
+                <label for="todoCheck${guid}"></label>\
+            </div>\
+            <a href='#'><i class="fas fa-trash-alt todo-remove-icon float-right"></i></a>
+            <span class="text" style="white-space: pre-line; width:100%;">${txt}</span>\
+        </li>`;
+        return ak;
+    }
+
+    const subtasks_body_up = `<div class="card dark-mode">
+                                    <ul class="todo-list" data-widget="todo-list" id="todo-list">
+                            `;
+    const subtasks_body_down = `    </ul>
+                            </div>`;
+
+    function saveSubtaskButton(e){
+        let txt             = $(e.target.closest('.form-group .input-group')).children('#content').val();
+        let parent_card     = $(e.target.closest('.card-saved'));
+        let parent_id       = parent_card.children('.card-body').attr('id');
+        let parent_type     = kanban_data.type(parent_id);
+        let parent_time     = kanban_data.projects_accessible[parent_type][parent_id]['time'];
+        let parent_priority = kanban_data.projects_accessible[parent_type][parent_id]['priority'];
+        let subtasks        = kanban_data.projects_accessible[parent_type][parent_id]['childs'];
+        let tmp = '';
+        let new_guid = guid();
+        let done_state = 0;
+        if($.isEmptyObject(subtasks)){
+            tmp = subtasks_body_up + savedSubtask(new_guid,done_state,txt) + subtasks_body_down;
+            kanban_data.add(new_guid,'subtask',txt,'',parent_time,parent_priority,'','',parent_type,parent_id,done_state);
+            parent_card.children('.card-body').append(tmp);
+        }else{
+            kanban_data.add(new_guid,'subtask',txt,'',parent_time,parent_priority,'','',parent_type,parent_id,done_state)
+            let tdlstbdy = parent_card.children('.card').children('.todo-list');
+            console.log(tdlstbdy);
+            tdlstbdy.append(savedSubtask(new_guid,done_state,txt));
+        }
+        removeCard(e);
+        kanbanWriteBackend();
+    }
 
     function savedCard(header,type,guid,txt,icon,title,time,priority){
         let bg_color = '';
@@ -17,14 +76,28 @@ $(function () {
             case "2": bg_color = 'style="border-bottom: 1px solid rgb( 50, 190, 140);"'; break;
             case "1": bg_color = ''; break;
         }
+        let childs = ``;
+        let tmp = '';
+        if(type == 'todo' || type == 'prog' || type == 'done'){
+            let subtasks = kanban_data.projects_accessible[type][guid]['childs'];
+            for(let sbtsk in subtasks){
+                tmp = tmp + savedSubtask(sbtsk,subtasks[sbtsk]['done_state'],subtasks[sbtsk]['txt']);
+            }
+            childs = subtasks_body_up + tmp + subtasks_body_down;
+        }
+
         let ak = `
         <div class="card card-saved" style="">
             ${header ?(`<div class="card-header card-header-drag" ${bg_color}>
                             <div id="title" style="float: left;">${title}</div>
-                            <div id="time" style="float: right;">${time}</div>
+                            <div class="ml-auto" style="float: right;">
+                                <div id="time" style="float: left;">${time}</div>
+                                <a href='#'  style="float: right; color: #fff;"><i class="fa-solid fa-pen-to-square"></i></a>
+                            </div>
                         </div>`):('')}
-            <div class="card-body card-saved-body ${type}" id=${guid} style="white-space: pre-line">${txt}</div>
+            <div class="card-body card-saved-body-${header ? 'tpd':'rbl'} ${type}" id=${guid} style="white-space: pre-line">${txt}</div>
             <a href='#'><i class="${icon}"></i></a>
+            ${childs}
         </div>`;
         return ak;
     }
@@ -70,11 +143,7 @@ $(function () {
         return ak;
     }
 
-    var projects_selected = {};
     var selected = {'root': '',
-                    'branch': '',
-                    'leaf': ''};
-    var selected_old = {'root': '',
                     'branch': '',
                     'leaf': ''};
 
@@ -84,86 +153,94 @@ $(function () {
             this.projects_accessible = proj_ac;
         }
         recreateProjectsAccessible(){
-            this.projects_accessible = {root: {},branch: {},leaf: {},todo:{},prog:{},done:{}};
+            this.projects_accessible = {root: {},branch: {},leaf: {},todo:{},prog:{},done:{},subtask:{},id:{}};
             for(let root_id in this.projects){ // for every root
+                // every root is already accessible
                 for(let branch_id in this.projects[root_id]['childs']){ // for every branch of the root
                     this.projects_accessible['branch'][branch_id] = this.projects[root_id]['childs'][branch_id];
+                    this.projects_accessible['id'][branch_id] = [root_id];
                     for(let leaf_id in this.projects[root_id]['childs'][branch_id]['childs']){ // for every leaf of the branch
                         this.projects_accessible['leaf'][leaf_id] = this.projects[root_id]['childs'][branch_id]['childs'][leaf_id];
+                        this.projects_accessible['id'][leaf_id] = [root_id,branch_id];
                         for(let tpd in this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs']){ // for every todo/prog/done of the leaf
                             for(let tpd_id in this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs'][tpd]){ // for every id in the todo/prog/done
                                 this.projects_accessible[tpd][tpd_id] = this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs'][tpd][tpd_id];
+                                this.projects_accessible['id'][tpd_id] = [root_id,branch_id,leaf_id];
+                                for(let subt_id in this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs'][tpd][tpd_id]['childs']){ // for every id in the subtasks
+                                    this.projects_accessible['subtask'][subt_id] = this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs'][tpd][tpd_id]['childs'][subt_id];
+                                    this.projects_accessible['id'][subt_id] = [root_id,branch_id,leaf_id,tpd_id];
+                                }
                             }
                         }
                     }
                 }
             }
         }
-        add(id,type,txt,title,time,priority,prog_time,done_time){
+        add(id,type,txt,title,time,priority,prog_time,done_time,type_tpd,id_tpd,done_state){
             switch(type) {
                 case 'root':
-                    this.projects[id] = {txt:txt,childs:{}};
+                    this.projects[id] = {txt:txt,childs:{},selected:''};
                     break;
                 case 'branch':
-                    this.projects[selected['root']]['childs'][id] = {parent:selected['root'], txt:txt,childs:{}};
-                    this.projects_accessible[type][id] = this.projects[selected['root']]['childs'][id];
+                    this.projects[selected['root']]['childs'][id] = {txt:txt,childs:{},selected:''};
                     break;
                 case 'leaf':
-                    this.projects[selected['root']]['childs'][selected['branch']]['childs'][id] = {parents:{branch:selected['branch'],root:selected['root']},txt:txt,time:time,childs:{todo:{},prog:{},done:{}}};
-                    this.projects_accessible['branch'][selected['branch']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'];
-                    this.projects_accessible[type][id] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][id];
+                    this.projects[selected['root']]['childs'][selected['branch']]['childs'][id] = {txt:txt,time:time,childs:{todo:{},prog:{},done:{}},selected:''};
                     break;
                 case 'todo':
                 case 'prog':
                 case 'done':
-                    this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id] = {parents:{branch:selected['branch'],
-                        root:selected['root'],
-                        leaf:selected['leaf']},
+                    this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id] = {
                         txt:txt,
                         title:title,
                         time:time,
                         priority:priority,
                         prog_time:prog_time,
-                        done_time:done_time};
-                    this.projects_accessible['branch'][selected['branch']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'];
-                    this.projects_accessible['leaf'][selected['leaf']]['childs'] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'];
-                    this.projects_accessible[type][id] = this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type][id];
+                        done_time:done_time,
+                        childs:{}};
+                    break;
+                case 'subtask':
+                    this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type_tpd][id_tpd]['childs'][id] = {done_state:done_state,txt:txt,done_time};
                     break;
             }
             this.recreateProjectsAccessible();
         }
-        remove(id,type){
+        remove(id){
+            let type = this.type(id);
+            let root_id    = this.projects_accessible['id'][id][0];
+            let branch_id  = this.projects_accessible['id'][id][1];
+            let leaf_id    = this.projects_accessible['id'][id][2];
+            let subtask_id = this.projects_accessible['id'][id][3];
+
             switch(type) {
                 case 'root':
                     delete this.projects[id];
                     break;
                 case 'branch':
-                    let prootid = this.projects_accessible[type][id]['parent'];
-                    delete this.projects[prootid]['childs'][id];
+                    delete this.projects[root_id]['childs'][id];
                     break;
                 case 'leaf':
-                    let psrootid = this.projects_accessible[type][id]['parents']['root'];
-                    let psbranchid = this.projects_accessible[type][id]['parents']['branch'];
-                    delete this.projects[psrootid]['childs'][psbranchid]['childs'][id];
+                    delete this.projects[root_id]['childs'][branch_id]['childs'][id];
                     break;
                 case 'todo':
                 case 'prog':
                 case 'done':
-                    let ps3rootid = this.projects_accessible[type][id]['parents']['root'];
-                    let ps3branchid = this.projects_accessible[type][id]['parents']['branch'];
-                    let ps3leafid = this.projects_accessible[type][id]['parents']['leaf'];
-                    delete this.projects[ps3rootid]['childs'][ps3branchid]['childs'][ps3leafid]['childs'][type][id];
+                    delete this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs'][type][id];
+                    break;
+                case 'subtask':
+                    delete this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs'][type][id];
                     break;
             }
             this.recreateProjectsAccessible();
         }
         type(id){
-            if(this.projects_accessible["root"][id]   !== undefined){return 'root'}
-            if(this.projects_accessible["branch"][id] !== undefined){return 'branch'}
-            if(this.projects_accessible["leaf"][id]   !== undefined){return 'leaf'}
-            if(this.projects_accessible["todo"][id]   !== undefined){return 'todo'}
-            if(this.projects_accessible["prog"][id]   !== undefined){return 'prog'}
-            if(this.projects_accessible["done"][id]   !== undefined){return 'done'}
+            if(this.projects[id] !== undefined){return 'root'}
+            if(this.projects_accessible["branch"][id]  !== undefined){return 'branch'}
+            if(this.projects_accessible["leaf"][id]    !== undefined){return 'leaf'}
+            if(this.projects_accessible["todo"][id]    !== undefined){return 'todo'}
+            if(this.projects_accessible["prog"][id]    !== undefined){return 'prog'}
+            if(this.projects_accessible["done"][id]    !== undefined){return 'done'}
+            if(this.projects_accessible["subtask"][id] !== undefined){return 'done'}
             throw new Error('No match found!');
         }
     }
@@ -174,40 +251,27 @@ $(function () {
     }
 
     function removeCard(e) {
+        $(e.target).closest('.card-saved').children('.card-header').children('#title').children('a').attr('style', ' ');
         e.target.closest('.form-group').remove();
     }
 
     function removeAddedCard(e) {
-        let body = $(e.target).closest('.card-saved').children('.card-saved-body');
+        let body = $(e.target).closest('.card-saved').children('.card-saved-body-tpd');
         let id = body.attr("id");
         e.target.closest('.card').remove();
-        if(body.hasClass('todo')){kanban_data.remove(id,'todo');}
-        if(body.hasClass('prog')){kanban_data.remove(id,'prog');}
-        if(body.hasClass('done')){kanban_data.remove(id,'done');}
+        kanban_data.remove(id);
         kanbanWriteBackend();
     }
 
     function removeAddedProjectNode(e) {
-        let body = $(e.target).closest('.card-saved').children('.card-saved-body');
+        let body = $(e.target).closest('.card-saved').children('.card-saved-body-rbl');
         let id = body.attr("id");
         if(id == selected['root'] || id == selected['branch'] || id == selected['leaf']){
             toastr.warning("you can't delete selected items");
         }else{
             if (confirm('Delete? U sure?')){
                 e.target.closest('.card').remove();
-                if(body.hasClass('root')){
-                    delete projects_selected[id];
-                    kanban_data.remove(id,'root');
-                }
-                if(body.hasClass('branch')){
-                    projects_selected[kanban_data.projects_accessible['branch'][id]['parent']][1] = '';
-                    projects_selected[kanban_data.projects_accessible['branch'][id]['parent']][2] = '';
-                    kanban_data.remove(id,'branch');
-                }
-                if(body.hasClass('leaf')){
-                    projects_selected[kanban_data.projects_accessible['leaf'][id]['parents']['root']][2] = '';
-                    kanban_data.remove(id,'leaf');
-                }
+                kanban_data.remove(id);
                 kanbanWriteBackend();
             }
         }
@@ -221,7 +285,7 @@ $(function () {
         if(time=="" && selected['leaf'] !== undefined){
             time = kanban_data.projects_accessible['leaf'][selected['leaf']]['time'];}
         let myguid = guid();
-        let ak = savedCard(e.data.extra.header,e.data.extra.type,myguid,txt,e.data.extra.icon,title,time,priority);
+
         let tmp = $(e.target.closest(`#${e.data.extra.name}-card`)).find(`#${e.data.extra.name}-body`);
         let prog_time = '';
         let done_time = '';
@@ -248,12 +312,10 @@ $(function () {
                 }
                 break;
         }
-        tmp.prepend(ak);
-        removeCard(e);
         kanban_data.add(myguid,e.data.extra.type,txt,title,time,priority,prog_time,done_time);
-        selectCardBackend(e.data.extra.type,myguid);
-        recreateRightColumns(e.data.extra.type);
-        selectCardFrontend(e.data.extra.type);
+        removeCard(e);
+        tmp.prepend(savedCard(e.data.extra.header,e.data.extra.type,myguid,txt,e.data.extra.icon,title,time,priority));
+        selectCard(myguid);
         kanbanWriteBackend();
     }
 
@@ -292,7 +354,16 @@ $(function () {
                 for(let tpd in {'todo':'','prog':'','done':''}){
                     let pri = Array(5).fill('');
                     for(let key in t[tpd]){
-                        let ak = savedCard(1,tpd,key,t[tpd][key]['txt'],"fa-solid fa-square-xmark",t[tpd][key]['title'],t[tpd][key]['time'],t[tpd][key]['priority']);
+                        let ak = savedCard(
+                            1,
+                            tpd,
+                            key,
+                            t[tpd][key]['txt'],
+                            "fa-solid fa-square-xmark",
+                            t[tpd][key]['title'],
+                            t[tpd][key]['time'],
+                            t[tpd][key]['priority']
+                        );
                         switch(t[tpd][key]['priority']){
                             case "5": pri[4] = pri[4] + ak; break;
                             case "4": pri[3] = pri[3] + ak; break;
@@ -304,41 +375,6 @@ $(function () {
                     $(`#kanban-${tpd}-card`).children(`#kanban-${tpd}-body`).html(pri[4]+pri[3]+pri[2]+pri[1]+pri[0]); //dont use .join()
                     tmp = '';
                 }
-        }
-    }
-
-    function selectCardFrontend(column_type){
-        let root_sel, branch_sel, leaf_sel;
-        let root_exst, branch_exst, leaf_exst = 0;
-        if(selected_old[column_type] != '')
-            $(`.kanban-projects-${column_type}`).children('#kanban-projects-body').children(`.card`).children(`#${selected_old[column_type]}`).toggleClass('bg-info');
-        if(selected['root'] != ''){
-            root_sel = $(`.kanban-projects-root`).children('#kanban-projects-body').children(`.card`).children(`#${selected['root']}`);
-            root_exst = 1;
-            if(selected['branch'] != ''){
-                branch_sel = $(`.kanban-projects-branch`).children('#kanban-projects-body').children(`.card`).children(`#${selected['branch']}`);
-                branch_exst = 1;
-                if(selected['leaf'] != ''){
-                    leaf_sel = $(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${selected['leaf']}`);
-                    leaf_exst = 1;
-                }
-            }
-        }else{return;}
-
-        switch(column_type) {
-            case 'root':
-                if(!root_sel.hasClass('bg-info')){root_sel.toggleClass('bg-info');}
-                if(branch_exst){branch_sel.toggleClass('bg-info');}
-                if(leaf_exst){leaf_sel.toggleClass('bg-info');}
-            break;
-            case 'branch':
-                if(!branch_sel.hasClass('bg-info')){branch_sel.toggleClass('bg-info');}
-                if(leaf_exst){leaf_sel.toggleClass('bg-info');}
-            break;
-            case 'leaf':
-                if(!leaf_sel.hasClass('bg-info')){leaf_sel.toggleClass('bg-info');}
-                updateRemaningTime(kanban_data.projects_accessible['leaf'][selected['leaf']]['time']);
-            break;
         }
     }
 
@@ -374,56 +410,38 @@ $(function () {
         }
     }
 
-    function selectCardBackend(column_type,id){
-        switch(column_type) {
-            case 'root':
-                selected_old['root'] = selected['root'];
-                selected_old['branch'] = '';
-                selected_old['leaf'] = '';
-                selected[column_type] = id;
-                selected['branch'] = '';
-                selected['leaf'] = '';
+    function selectCard(id){
 
-                if (selected['root'] in projects_selected){
-                    if (projects_selected[selected['root']][1] != ''){
-                        selected['branch'] = projects_selected[selected['root']][1];
-                    }else{
-                        selected['branch'] = '';
-                    }
-                    if (projects_selected[selected['root']][2] != ''){
-                        selected['leaf'] = projects_selected[selected['root']][2];
-                    }else{
-                        selected['leaf'] = '';
-                    }
-                }else{
-                    projects_selected[selected['root']] = Array(3).fill('');
-                    projects_selected[selected['root']][0] = selected['root'];
+        let type = kanban_data.type(id);
+        try{$(`.kanban-projects-root`).children('#kanban-projects-body').children(`.card`).children(`#${selected['root']}`).removeClass('bg-info');}catch(err){}
+        try{$(`.kanban-projects-branch`).children('#kanban-projects-body').children(`.card`).children(`#${selected['branch']}`).removeClass('bg-info');}catch(err){}
+        try{$(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${selected['leaf']}`).removeClass('bg-info');}catch(err){}
+
+        switch(type) {
+            case 'root':
+                selected['root'] = id;
+                selected['branch'] = kanban_data.projects[id]['selected'];
+                if (selected['branch'] in kanban_data.projects_accessible['branch']){
+                    selected['leaf'] = kanban_data.projects_accessible['branch'][selected['branch']]['selected'];
                 }
             break;
             case 'branch':
-                selected_old['branch'] =  selected['branch'];
-                selected_old['leaf'] = '';
-                selected[column_type] = id;
-                selected['leaf'] = '';
-                projects_selected[selected['root']][1] = selected[column_type];
-                projects_selected[selected['root']][2] = '';
-
-                if (projects_selected[selected['root']][2] != ''){
-                    selected['leaf'] = projects_selected[selected['root']][2];
-                }else{
-                    let akey;
-                    for(akey in kanban_data.projects_accessible['branch'][id]['childs']){
-                        break;
-                    }
-                    selected['leaf'] = akey;
-                }
+                kanban_data.projects[selected['root']]['selected'] = id;
+                selected['branch'] = id;
+                selected['leaf'] = kanban_data.projects_accessible['branch'][selected['branch']]['selected'];
             break;
             case 'leaf':
-                selected_old['leaf'] = selected['leaf'];
-                selected[column_type] = id;
-                projects_selected[selected['root']][2] = selected[column_type];
+                kanban_data.projects_accessible['branch'][selected['branch']]['selected'] = id;
+                selected['leaf'] = id;
             break;
         }
+
+        recreateRightColumns(type);
+
+        try{$(`.kanban-projects-root`).children('#kanban-projects-body').children(`.card`).children(`#${selected['root']}`).addClass('bg-info');}catch(err){}
+        try{$(`.kanban-projects-branch`).children('#kanban-projects-body').children(`.card`).children(`#${selected['branch']}`).addClass('bg-info');}catch(err){}
+        try{$(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${selected['leaf']}`).addClass('bg-info');}catch(err){}
+        updateRemaningTime(kanban_data.projects_accessible['leaf'][selected['leaf']]['time']);
     }
 
     /**
@@ -469,8 +487,6 @@ $(function () {
         let entry = {
             projects: kanban_data.projects,
             selected: selected,
-            selected_old: selected_old,
-            projects_selected: projects_selected,
             command: 'WRITE'
         };
 
@@ -513,8 +529,6 @@ $(function () {
                 kanban_data.projects =  data['projects'];
                 kanban_data.recreateProjectsAccessible();
                 selected = data['selected'];
-                selected_old = data['selected_old'];
-                projects_selected = data['projects_selected'];
 
                 let tmp = '';
                 for(let key in kanban_data.projects){
@@ -527,10 +541,12 @@ $(function () {
                 }
                 tmp = tmp + fuckcss;
                 $(`.kanban-projects-root`).children('#kanban-projects-body').html(tmp);
-                selectCardFrontend('root');
-                if( selected['root'] != '')
+                if( selected['root'] != ''){
                     recreateRightColumns('root');
-                selectCardFrontend('root');
+                    try{$(`.kanban-projects-root`).children('#kanban-projects-body').children(`.card`).children(`#${selected['root']}`).addClass('bg-info');}catch(err){}
+                    try{$(`.kanban-projects-branch`).children('#kanban-projects-body').children(`.card`).children(`#${selected['branch']}`).addClass('bg-info');}catch(err){}
+                    try{$(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${selected['leaf']}`).addClass('bg-info');}catch(err){}
+                }
                 initializeTable();
             });
         })
@@ -559,33 +575,26 @@ $(function () {
 
         },
         receive: function( e, ui ) {
-            let dropped_card_body = ui.item.find(".card-saved-body");
+            let dropped_card_body = ui.item.find(".card-saved-body-tpd");
             let card_id   = dropped_card_body.attr('id');
             let card_type = kanban_data.type(card_id);
             let body_name = e.target.id;
-            let txt       = kanban_data.projects_accessible[card_type][card_id]['txt'];
-            let title     = kanban_data.projects_accessible[card_type][card_id]['title'];
-            let time      = kanban_data.projects_accessible[card_type][card_id]['time'];
-            let priority  = kanban_data.projects_accessible[card_type][card_id]['priority'];
-            let prog_time = kanban_data.projects_accessible[card_type][card_id]['prog_time'];
-            let done_time = kanban_data.projects_accessible[card_type][card_id]['done_time'];
-            let new_guid  = guid();
-            kanban_data.remove(card_id,card_type);
+            let crd = kanban_data.projects_accessible[card_type][card_id];
+            kanban_data.remove(card_id);
             dropped_card_body.toggleClass(card_type);
-            dropped_card_body.attr('id',new_guid)
 
             switch(body_name){
                 case 'kanban-todo-body':
                     dropped_card_body.toggleClass('todo');
-                    kanban_data.add(new_guid,'todo',txt,title,time,priority,'','');
+                    kanban_data.add(card_id,'todo',crd['txt'],crd['title'],crd['time'],crd['priority'],'','');
                 break;
                 case 'kanban-prog-body':
                     dropped_card_body.toggleClass('prog');
-                    kanban_data.add(new_guid,'prog',txt,title,time,priority,formatDate(new Date()),'');
+                    kanban_data.add(card_id,'prog',crd['txt'],crd['title'],crd['time'],crd['priority'],formatDate(new Date()),'');
                 break;
                 case 'kanban-done-body':
                     dropped_card_body.toggleClass('done');
-                    kanban_data.add(new_guid,'done',txt,title,time,priority,prog_time,formatDate(new Date()));
+                    kanban_data.add(card_id,'done',crd['txt'],crd['title'],crd['time'],crd['priority'],crd['prog_time'],formatDate(new Date()));
                 break;
             }
             kanbanWriteBackend();
@@ -618,22 +627,25 @@ $(function () {
     $('.kanban-projects-branch').on("click",('#kanban-cancel-button'),removeCard);
     $('.kanban-projects-leaf  ').on("click",('#kanban-cancel-button'),removeCard);
     $('.card-body, .fa-rectangle-xmark').on("click",('.fa-rectangle-xmark'),removeAddedProjectNode);
+    $('.card-body, .fa-pen-to-square').on("click",('.fa-pen-to-square'),addSubtasksEdit);
+    $('#kanban-todo-body').on("click",('#subtasks-cancel-button'),removeCard);
+    $('#kanban-prog-body').on("click",('#subtasks-cancel-button'),removeCard);
+    $('#kanban-done-body').on("click",('#subtasks-cancel-button'),removeCard);
+    $('#kanban-todo-body').on("click",('#subtasks-add-button'),saveSubtaskButton);
+    $('#kanban-prog-body').on("click",('#subtasks-add-button'),saveSubtaskButton);
+    $('#kanban-done-body').on("click",('#subtasks-add-button'),saveSubtaskButton);
 
+    function addSubtasksEdit(e){
+        let body = $(e.target).closest('.card-saved').children('.card-saved-body-tpd');
+        let id = body.attr("id");
+        $('#'+id).closest('.card').append(subtasks_footer);
+        $(e.target).closest('.card-saved .card-header #title a').attr('style', 'visibility: hidden !important');
+    }
 
-    $('.card').on("click",('.card-saved'),function(e) {
-        let column_type;
-        if($(e.target).hasClass('root')){
-            column_type = 'root';
-        }
-        if($(e.target).hasClass('branch')){
-            column_type = 'branch';
-        }
-        if($(e.target).hasClass('leaf')){
-            column_type = 'leaf';
-        }
-        selectCardBackend(column_type,$(e.target).attr('id'));
-        recreateRightColumns(column_type);
-        selectCardFrontend(column_type);
+    $('.card').on("click",('.card-saved-body-rbl'),function(e) {
+        let id = $(e.target).attr('id');
+        selectCard(id);
+        kanbanWriteBackend();
     });
 
 
@@ -664,13 +676,9 @@ $(function () {
     var calendarEl = document.getElementById('calendar');
     var calendar = new Calendar(calendarEl, {
         eventClick: function(info) {
-            let itm = kanban_data.projects_accessible[info.event.groupId][info.event.id];
-            let types = {root:'', branch:'', leaf:''}; //order matters
-            for(let type in types){
-                selectCardBackend(type,itm['parents'][type]);
-                recreateRightColumns(type);
-                selectCardFrontend(type);
-            }
+            selectCard(kanban_data.projects_accessible['id'][info.event.id][0]);
+            selectCard(kanban_data.projects_accessible['id'][info.event.id][1]);
+            selectCard(kanban_data.projects_accessible['id'][info.event.id][2]);
         },
         headerToolbar: {
             left  : 'prev,next today',
@@ -723,7 +731,7 @@ $(function () {
         for(let type in types){
             for(let event_id in kanban_data.projects_accessible[type]){
                 let event_raw = kanban_data.projects_accessible[type][event_id];
-                let lid = event_raw['parents']['leaf'];
+                let lid = kanban_data.projects_accessible['id'][event_id][2];
                 let l_time = new Date(kanban_data.projects_accessible['leaf'][lid]['time']);
                 let e_time = new Date(event_raw['time']);
                 let e_done_time = new Date(event_raw['done_time']);
@@ -809,8 +817,8 @@ $(function () {
         for(let key in done_dic){
             done_dic[key]['my_id'] = key;
             chronicle_pro.push(done_dic[key]);
-            parent_branches[done_dic[key]['parents']['branch']] = '';
-            parent_leafs[done_dic[key]['parents']['leaf']] = '';
+            parent_branches[kanban_data.projects_accessible['id'][key][1]] = '';
+            parent_leafs[kanban_data.projects_accessible['id'][key][2]] = '';
         }
         let branch_colors = distinctColors(Object.keys(parent_branches).length);
         let leaf_colors = distinctColors(Object.keys(parent_leafs).length);
@@ -836,7 +844,8 @@ $(function () {
                 item['done_time'],
                 item['priority'],
                 "fas fa-flag",
-                parent_branches[item['parents']['branch']],parent_leafs[item['parents']['leaf']])
+                parent_branches[kanban_data.projects_accessible['id'][item['my_id']][1]],
+                parent_leafs[kanban_data.projects_accessible['id'][item['my_id']][2]]);
             tmp = ak + tmp;
             ii = ii + 1;
         }
@@ -848,13 +857,9 @@ $(function () {
     $('.nav-item').on('click','#pills-timeline-view-tab',createTimeline);
 
     function selectLeftSide(e){
-        let itm = kanban_data.projects_accessible['done'][$(e.currentTarget).attr('id')];
-        let types = {root:'', branch:'', leaf:''}; //order matters
-        for(let type in types){
-            selectCardBackend(type,itm['parents'][type]);
-            recreateRightColumns(type);
-            selectCardFrontend(type);
-        }
+        selectCard(kanban_data.projects_accessible['id'][$(e.currentTarget).attr('id')][0]);
+        selectCard(kanban_data.projects_accessible['id'][$(e.currentTarget).attr('id')][1]);
+        selectCard(kanban_data.projects_accessible['id'][$(e.currentTarget).attr('id')][2]);
     }
 
     $('.nav-item').on('click','#pills-table-view-tab',recreateTable);
@@ -894,13 +899,8 @@ $(function () {
         let currentRow = $(this).closest("tr");
         let data = $('#table_id').DataTable().row(currentRow).data();
         let id = data[0];
-        let type = kanban_data.type(id);
-        let itm = kanban_data.projects_accessible[type][id];
-        let types = {root:'', branch:'', leaf:''}; //order matters
-        for(let type in types){
-            selectCardBackend(type,itm['parents'][type]);
-            recreateRightColumns(type);
-            selectCardFrontend(type);
-        }
+        selectCard(kanban_data.projects_accessible['id'][id][0]);
+        selectCard(kanban_data.projects_accessible['id'][id][1]);
+        selectCard(kanban_data.projects_accessible['id'][id][2]);
     });
 })

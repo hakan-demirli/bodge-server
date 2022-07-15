@@ -91,7 +91,7 @@ table.dataTable tfoot th {
     background:  #557582;
     color: white;
     top: -10px;
-    right: -6px;
+    left: -6px;
 }
 
 .fa-rectangle-xmark {
@@ -99,5 +99,5 @@ table.dataTable tfoot th {
     background:  #557582;
     color: white;
     top: -10px;
-    right: -6px;
+    left: -6px;
 }
