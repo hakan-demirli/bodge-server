@@ -857,10 +857,18 @@ $(function () {
         }
     }
 
-    $('.nav-item').on('click','#pills-table-view-tab',initializeTable);
+    $('.nav-item').on('click','#pills-table-view-tab',recreateTable);
+
+    function recreateTable(){
+        let projects_table = $('#table_id').DataTable();
+        projects_table.column(0).visible(false);
+        fillTable(projects_table);
+    }
 
     function initializeTable(){
-        let projects_table = $('#table_id').DataTable();
+        let projects_table = $('#table_id').DataTable({
+            order: [[ 2, 'desc' ]]
+        });
         projects_table.column(0).visible(false);
         fillTable(projects_table);
     }
