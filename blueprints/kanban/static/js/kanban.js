@@ -56,12 +56,12 @@ $(function () {
         }else{
             parent_card.children('.card').children('.todo-list').append(savedSubtask(new_guid,done_state,txt));
         }
-        kanban_data.add(new_guid,'subtask',txt,'',parent_time,parent_priority,'','',parent_type,parent_id,done_state);
+        kanban_data.add(new_guid,'subtask',txt,'',parent_time,parent_priority,0,'','',parent_type,parent_id,done_state);
         removeCard(e);
         kanbanWriteBackend();
     }
 
-    function savedCard(header,type,guid,txt,icon,title,time,priority){
+    function savedCard(header,type,guid,txt,icon,title,time,priority,sp){
         let bg_color = '';
         switch(priority){
             case "5": bg_color = 'style="border-bottom: 1px solid rgb(255,   0,   0);"'; break;
@@ -79,16 +79,28 @@ $(function () {
             }
             childs = subtasks_body_up + tmp + subtasks_body_down;
         }
-
+        let ak_time = '';
+        if(time != ''){
+            ak_time = ` <div class="card-header card-header-drag" ${bg_color}>
+                            <div id="time" class="d-flex justify-content-center">
+                                <font color="#ced4da">${time}</font>
+                            </div>
+                        </div>`
+            bg_color = '';
+        }
         let ak = `
         <div class="card card-saved" style="">
             ${header ?(`<div class="card-header card-header-drag" ${bg_color}>
                             <div id="title" style="float: left;">${title}</div>
                             <div class="ml-auto" style="float: right;">
-                                <div id="time" style="float: left;">${time}</div>
+                                <div id="sp" style="float: left;">
+                                    <font color="#d7c0ae">${sp}</font>
+                                    &#128220;
+                                </div>
                                 <a href='#'  style="float: right; color: #fff;"><i class="fa-solid fa-pen-to-square"></i></a>
                             </div>
-                        </div>`):('')}
+                        </div>
+                        ${ak_time}`):('')}
             <div class="card-body card-saved-body-${header ? 'tpd':'rbl'} ${type}" id=${guid} style="white-space: pre-line">${txt}</div>
             <a href='#'><i class="${icon}"></i></a>
             ${childs}
@@ -111,6 +123,9 @@ $(function () {
                         <option value="5">5</option>
                     </select>
                 </div>
+                <input type="range" min="1" max="100" step="1" value="0" class="story-points" oninput="this.nextElementSibling.value = this.value" style="flex:auto; margin-left: 0.2rem;"/>
+                <output style="  margin-left: 0.6rem; margin-right: 0.6rem;">1</output>
+                <div style="margin-right: 0.8rem;">&#128220;</div>
             </div>
             `):('')}
             <textarea class="form-control" rows="${row}" placeholder="..." id="content"></textarea>
@@ -170,7 +185,7 @@ $(function () {
                 }
             }
         }
-        add(id,type,txt,title,time,priority,prog_time,done_time,type_tpd,id_tpd,done_state){
+        add(id,type,txt,title,time,priority,sp,prog_time,done_time,type_tpd,id_tpd,done_state){
             switch(type) {
                 case 'root':
                     this.projects[id] = {txt:txt,childs:{},selected:''};
@@ -189,6 +204,7 @@ $(function () {
                         title:title,
                         time:time,
                         priority:priority,
+                        sp:sp,
                         prog_time:prog_time,
                         done_time:done_time,
                         childs:{}};
@@ -281,6 +297,8 @@ $(function () {
         let title    = $(e.target.closest('.form-group')).children('.input-group').children('#title').val();
         let time     = $(e.target.closest('.form-group')).children('.input-group').children('#clock-add-time').val();
         let priority = $(e.target.closest('.form-group')).children('.input-group').children('.input-group-append').children('.form-select').val();
+        let sp       = $(e.target.closest('.form-group')).children('.input-group').children('.story-points').val();
+
         if(time=="" && selected['leaf'] !== undefined){
             time = kanban_data.projects_accessible['leaf'][selected['leaf']]['time'];}
         let myguid = guid();
@@ -311,9 +329,9 @@ $(function () {
                 }
                 break;
         }
-        kanban_data.add(myguid,e.data.extra.type,txt,title,time,priority,prog_time,done_time);
+        kanban_data.add(myguid,e.data.extra.type,txt,title,time,priority,sp,prog_time,done_time);
         removeCard(e);
-        tmp.prepend(savedCard(e.data.extra.header,e.data.extra.type,myguid,txt,e.data.extra.icon,title,time,priority));
+        tmp.prepend(savedCard(e.data.extra.header,e.data.extra.type,myguid,txt,e.data.extra.icon,title,time,priority,sp));
         selectCard(myguid);
         kanbanWriteBackend();
     }
@@ -327,7 +345,7 @@ $(function () {
                     break;
                 for(let key in kanban_data.projects[selected['root']]["childs"]){
                     let br = kanban_data.projects_accessible['branch'][key];
-                    let ak = savedCard(0,'branch',key,br['txt'],"fa-solid fa-rectangle-xmark",br['title'],br['time'],br['priority']);
+                    let ak = savedCard(0,'branch',key,br['txt'],"fa-solid fa-rectangle-xmark",br['title'],br['time'],br['priority'],br['sp']);
                     tmp = tmp + ak;
                 }
                 tmp = tmp + fuckcss;
@@ -340,7 +358,7 @@ $(function () {
                 tmp = '';
                 for(let key in kanban_data.projects_accessible['branch'][selected['branch']]["childs"]){
                     let lf = kanban_data.projects_accessible['leaf'][key];
-                    let ak = savedCard(0,'leaf',key,lf['txt'],"fa-solid fa-rectangle-xmark",lf['title'],lf['time'],lf['priority']);
+                    let ak = savedCard(0,'leaf',key,lf['txt'],"fa-solid fa-rectangle-xmark",lf['title'],lf['time'],lf['priority'],lf['sp']);
                     tmp = tmp + ak;
                 }
                 tmp = tmp + fuckcss;
@@ -361,7 +379,8 @@ $(function () {
                             "fa-solid fa-square-xmark",
                             t[tpd][key]['title'],
                             t[tpd][key]['time'],
-                            t[tpd][key]['priority']
+                            t[tpd][key]['priority'],
+                            t[tpd][key]['sp']
                         );
                         switch(t[tpd][key]['priority']){
                             case "5": pri[4] = pri[4] + ak; break;
@@ -535,7 +554,8 @@ $(function () {
                     let title    = kanban_data.projects[key]['title'];
                     let time     = kanban_data.projects[key]['time'];
                     let priority = kanban_data.projects[key]['priority'];
-                    let ak = savedCard(0,'root',key,txt,"fa-solid fa-rectangle-xmark",title,time,priority);
+                    let sp = kanban_data.projects[key]['sp'];
+                    let ak = savedCard(0,'root',key,txt,"fa-solid fa-rectangle-xmark",title,time,priority,sp);
                     tmp = tmp + ak;
                 }
                 tmp = tmp + fuckcss;
@@ -584,12 +604,12 @@ $(function () {
             switch(body_name){
                 case 'kanban-todo-body':
                     dropped_card_body.toggleClass('todo');
-                    kanban_data.add(card_id,'todo',crd['txt'],crd['title'],crd['time'],crd['priority'],'','');
+                    kanban_data.add(card_id,'todo',crd['txt'],crd['title'],crd['time'],crd['priority'],crd['sp'],'','');
                     card_type_new = 'todo';
                 break;
                 case 'kanban-prog-body':
                     dropped_card_body.toggleClass('prog');
-                    kanban_data.add(card_id,'prog',crd['txt'],crd['title'],crd['time'],crd['priority'],formatDate(new Date()),'');
+                    kanban_data.add(card_id,'prog',crd['txt'],crd['title'],crd['time'],crd['priority'],crd['sp'],formatDate(new Date()),'');
                     card_type_new = 'prog';
                 break;
                 case 'kanban-done-body':
@@ -599,7 +619,7 @@ $(function () {
                     if(prog_time === ''){
                         prog_time = tm;
                     }
-                    kanban_data.add(card_id,'done',crd['txt'],crd['title'],crd['time'],crd['priority'],prog_time,tm);
+                    kanban_data.add(card_id,'done',crd['txt'],crd['title'],crd['time'],crd['priority'],crd['sp'],prog_time,tm);
                     card_type_new = 'done';
                 break;
                 default:
@@ -607,7 +627,7 @@ $(function () {
             }
             for(let key in crd['childs']){
                 let sbtsk = crd['childs'][key];
-                kanban_data.add(key,'subtask',sbtsk['txt'],'',crd['time'],crd['priority'],sbtsk['prog_time'],sbtsk['done_time'],card_type_new,card_id,sbtsk['done_state']);
+                kanban_data.add(key,'subtask',sbtsk['txt'],'',crd['time'],crd['priority'],0,sbtsk['prog_time'],sbtsk['done_time'],card_type_new,card_id,sbtsk['done_state']);
             }
             kanbanWriteBackend();
         },
@@ -667,23 +687,24 @@ $(function () {
         let txt         = kanban_data.projects_accessible['subtask'][id]['txt'];
         let prog_time   = kanban_data.projects_accessible['subtask'][id]['prog_time'];
         let priority    = kanban_data.projects_accessible['subtask'][id]['priority'];
+        let sp    = kanban_data.projects_accessible['subtask'][id]['priority'];
         let tpd_id      = kanban_data.projects_accessible['id'][id][3];
         let parent_id   = tpd_id;
         let parent_type = kanban_data.type(tpd_id);
 
         switch(tpd_subtask){
             case '0':
-                kanban_data.add(id,'subtask',txt,'','',priority,'','',parent_type,parent_id,tpd_subtask);
+                kanban_data.add(id,'subtask',txt,'','',priority,sp,'','',parent_type,parent_id,tpd_subtask);
                 break;
             case '1':
-                kanban_data.add(id,'subtask',txt,'','',priority,formatDate(new Date()),'',parent_type,parent_id,tpd_subtask);
+                kanban_data.add(id,'subtask',txt,'','',priority,sp,formatDate(new Date()),'',parent_type,parent_id,tpd_subtask);
                 break;
             case '2':
                 let tm = formatDate(new Date());
                 if(prog_time === ''){
                     prog_time = tm;
                 }
-                kanban_data.add(id,'subtask',txt,'','',priority,prog_time,tm,parent_type,parent_id,tpd_subtask);
+                kanban_data.add(id,'subtask',txt,'','',priority,sp,prog_time,tm,parent_type,parent_id,tpd_subtask);
                 break;
             default:
                 throw Error("Can't Slide ;(");
