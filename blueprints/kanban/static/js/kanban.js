@@ -21,13 +21,13 @@ $(function () {
 
     function savedSubtask(guid,done,txt){
         let ak = `\
-        <li id="${guid}">\
+        <li id="${guid}" class="subtask">\
             <span class="handle">\
                 <i class="fas fa-ellipsis-v"></i>\
                 <i class="fas fa-ellipsis-v"></i>\
             </span>\
-            <input type="range" min="0" max="2" step="1" value="${done}" id="${guid}" class="subtask" />\
-            <a href='#'><i class="fas fa-trash-alt todo-remove-icon float-right"></i></a>
+            <input type="range" min="0" max="2" step="1" value="${done}" id="${guid}" class="subtask-range" />\
+            <a href='#'><i class="fas fa-trash-alt float-right" id="subtask-remove-icon"></i></a>
             <span class="text" style="white-space: pre-line; width:100%;">${txt}</span>\
         </li>`;
         return ak;
@@ -226,7 +226,8 @@ $(function () {
                     delete this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs'][type][id];
                     break;
                 case 'subtask':
-                    delete this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs'][type][id];
+                    let tpd_type = this.type(tpd_id);
+                    delete this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs'][tpd_type][tpd_id]['childs'][id];
                     break;
             }
             this.recreateProjectsAccessible();
@@ -238,7 +239,7 @@ $(function () {
             if(this.projects_accessible["todo"][id]    !== undefined){return 'todo'}
             if(this.projects_accessible["prog"][id]    !== undefined){return 'prog'}
             if(this.projects_accessible["done"][id]    !== undefined){return 'done'}
-            if(this.projects_accessible["subtask"][id] !== undefined){return 'done'}
+            if(this.projects_accessible["subtask"][id] !== undefined){return 'subtask'}
             throw new Error('No match found!');
         }
     }
@@ -653,10 +654,16 @@ $(function () {
         $(e.target).closest('.card-saved .card-header #title a').attr('style', 'visibility: hidden !important');
     }
 
-    $('.card').on("input",'.subtask',function() {
+    $('.card').on("click",'#subtask-remove-icon',function(e){
+        let subtask = $(e.target).closest('.subtask');
+        let id = subtask.attr('id');
+        kanban_data.remove(id);
+        $(e.target).closest('.subtask').remove();
+        kanbanWriteBackend();
+    });
+    $('.card').on("input",'.subtask-range',function() {
         let id = $(this).attr('id');
         let tpd_subtask = $(this).val();
-        console.log(id,' ',tpd_subtask,' ');
         let txt         = kanban_data.projects_accessible['subtask'][id]['txt'];
         let prog_time   = kanban_data.projects_accessible['subtask'][id]['prog_time'];
         let priority    = kanban_data.projects_accessible['subtask'][id]['priority'];
