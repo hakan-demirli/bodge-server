@@ -55,14 +55,11 @@ $(function () {
         let done_state = 0;
         if($.isEmptyObject(subtasks)){
             tmp = subtasks_body_up + savedSubtask(new_guid,done_state,txt) + subtasks_body_down;
-            kanban_data.add(new_guid,'subtask',txt,'',parent_time,parent_priority,'','',parent_type,parent_id,done_state);
             parent_card.children('.card-body').append(tmp);
         }else{
-            kanban_data.add(new_guid,'subtask',txt,'',parent_time,parent_priority,'','',parent_type,parent_id,done_state)
-            let tdlstbdy = parent_card.children('.card').children('.todo-list');
-            console.log(tdlstbdy);
-            tdlstbdy.append(savedSubtask(new_guid,done_state,txt));
+            parent_card.children('.card').children('.todo-list').append(savedSubtask(new_guid,done_state,txt));
         }
+        kanban_data.add(new_guid,'subtask',txt,'',parent_time,parent_priority,'','',parent_type,parent_id,done_state);
         removeCard(e);
         kanbanWriteBackend();
     }
@@ -571,15 +568,14 @@ $(function () {
 
     $('.connectedSortable').sortable({
         cancel: ".unsortable",
-        update: function(e, ui) {
-
-        },
+        update: function(e, ui) {},
         receive: function( e, ui ) {
             let dropped_card_body = ui.item.find(".card-saved-body-tpd");
             let card_id   = dropped_card_body.attr('id');
             let card_type = kanban_data.type(card_id);
             let body_name = e.target.id;
             let crd = kanban_data.projects_accessible[card_type][card_id];
+            let card_type_new = '';
             kanban_data.remove(card_id);
             dropped_card_body.toggleClass(card_type);
 
@@ -587,15 +583,24 @@ $(function () {
                 case 'kanban-todo-body':
                     dropped_card_body.toggleClass('todo');
                     kanban_data.add(card_id,'todo',crd['txt'],crd['title'],crd['time'],crd['priority'],'','');
+                    card_type_new = 'todo';
                 break;
                 case 'kanban-prog-body':
                     dropped_card_body.toggleClass('prog');
                     kanban_data.add(card_id,'prog',crd['txt'],crd['title'],crd['time'],crd['priority'],formatDate(new Date()),'');
+                    card_type_new = 'prog';
                 break;
                 case 'kanban-done-body':
                     dropped_card_body.toggleClass('done');
                     kanban_data.add(card_id,'done',crd['txt'],crd['title'],crd['time'],crd['priority'],crd['prog_time'],formatDate(new Date()));
+                    card_type_new = 'done';
                 break;
+                default:
+                    throw Error("No Column Found!");
+            }
+            for(let key in crd['childs']){
+                let sbtsk = crd['childs'][key];
+                kanban_data.add(key,'subtask',sbtsk['txt'],'',crd['time'],crd['priority'],'','',card_type_new,card_id,sbtsk['done_state']);
             }
             kanbanWriteBackend();
         },
