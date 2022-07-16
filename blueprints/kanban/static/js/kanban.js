@@ -842,7 +842,8 @@ $(function () {
                             <span class="bg-danger">The Dark Age</span>
                         </div>`;
 
-    function timelineItem(header,body,id,time,priority,icon,branch_color,item_color){
+    function timelineItem(header,body,id,time,priority,icon,branch_color,item_color,child_timeline){
+
         let bg_color = ''
         switch(priority){
             case "5": bg_color = 'style="border-bottom: 1px solid rgb(255,   0,   0);"'; break;
@@ -851,12 +852,15 @@ $(function () {
             case "2": bg_color = 'style="border-bottom: 1px solid rgb( 50, 190, 140);"'; break;
             case "1": bg_color = ''; break;
         }
+
+        let sub = (kanban_data.type(id) != 'subtask')?(`<h3 class="timeline-header" ${bg_color}>${header}</h3>`):('');
         let ak = `  <div>
                         <i class="${icon}" style="color:${item_color}; background-color:${branch_color}; text-shadow: 0 0 4px #000000;"></i>
                         <div class="timeline-item" id="${id}">
                             <span class="time">${time}\xa0\xa0<i class="far fa-clock"></i></span>
-                            <h3 class="timeline-header" ${bg_color}>${header}</h3>
+                            ${sub}
                             <div class="timeline-body">${body}</div>
+                            ${child_timeline}
                         </div>
                     </div>`;
         return ak;
@@ -864,13 +868,15 @@ $(function () {
 
     function createTimeline(){
         let tmp = '';
+        let tmp_sub = '';
         let chronicle_pro = [];
         let parent_branches = {};
         let parent_leafs = {};
         let done_dic = kanban_data.projects_accessible['done'];
         for(let key in done_dic){
-            done_dic[key]['my_id'] = key;
-            chronicle_pro.push(done_dic[key]);
+            let tmp = jQuery.extend(true, {}, done_dic);
+            tmp[key]['my_id'] = key;
+            chronicle_pro.push(tmp[key]);
             parent_branches[kanban_data.projects_accessible['id'][key][1]] = '';
             parent_leafs[kanban_data.projects_accessible['id'][key][2]] = '';
         }
@@ -891,15 +897,44 @@ $(function () {
             return new Date(a.done_time).getTime() - new Date(b.done_time).getTime()
         });
         ii = 0;
-        for (const item of chronicle_pro) {
-            let ak = timelineItem(item['title'],
+        for(const item of chronicle_pro){
+            if(!$.isEmptyObject(item['childs'])){
+                let chronicle_childs = [];
+                for(let subtask_id in item['childs']){
+                    let tmp = jQuery.extend(true, {}, item['childs'][subtask_id]);
+                    tmp['my_id'] = subtask_id;
+                    chronicle_childs.push(tmp);
+                }
+                chronicle_childs.sort(function(a,b) {
+                    return new Date(a.done_time).getTime() - new Date(b.done_time).getTime()
+                });
+                for(const subtask of chronicle_childs){
+                    if(subtask['done_state'] == 2){
+                        let ak_sub = timelineItem(
+                            '',
+                            subtask['txt'],
+                            subtask['my_id'],
+                            subtask['done_time'],
+                            item['priority'],
+                            "fas fa-flag",
+                            parent_branches[kanban_data.projects_accessible['id'][item['my_id']][1]],
+                            parent_leafs[kanban_data.projects_accessible['id'][item['my_id']][2]],
+                            '');
+                        tmp_sub = ak_sub + tmp_sub;
+                    }
+                }
+                tmp_sub = '<div class="timeline">' + tmp_sub + '</div>';
+            }
+            let ak = timelineItem(
+                item['title'],
                 item['txt'],
                 item['my_id'],
                 item['done_time'],
                 item['priority'],
                 "fas fa-flag",
                 parent_branches[kanban_data.projects_accessible['id'][item['my_id']][1]],
-                parent_leafs[kanban_data.projects_accessible['id'][item['my_id']][2]]);
+                parent_leafs[kanban_data.projects_accessible['id'][item['my_id']][2]],
+                tmp_sub);
             tmp = ak + tmp;
             ii = ii + 1;
         }
