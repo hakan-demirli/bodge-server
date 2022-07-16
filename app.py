@@ -10,7 +10,8 @@ class MyFlaskServer():
     my_name = 'server'
     root_path = Path(__file__).parent
     blueprints_path = root_path / "blueprints"
-    user_data_file_path = root_path / 'my_data.json'
+    user_data_folder_path = root_path / 'data'
+    user_data_file_path = user_data_folder_path / 'base.json'
     user_data_json = {}
     blueprints = {}
     app = Flask(__name__)
@@ -27,6 +28,10 @@ class MyFlaskServer():
         self.app.add_url_rule('/', 'root', login_required(self.__rootRoute), methods=["GET"])
 
     def __initUserData(self):
+        try:
+            Path(self.user_data_folder_path).mkdir(parents=True)
+        except FileExistsError:
+            pass
         self.user_data_json = {"sidebar": [], "navbar": {}, "settings":{}, "cards":[]}
         for key in self.blueprints:
             bp_inst = self.blueprints[key]
