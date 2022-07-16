@@ -8,6 +8,8 @@
 <link href="/static/plugins/tempusdominus/css/tempus-dominus.min.css" rel="stylesheet">
 <link href="/static/plugins/datatables/dataTables.css" rel="stylesheet">
 <link href="/static/plugins/icheck/icheck-bootstrap.min.css" rel="stylesheet">
+<link href="/static/plugins/c3/c3.min.css" rel="stylesheet">
+
 {% endblock stylesheets %}
 
 {% block content %}
@@ -66,6 +68,9 @@
             </li>
             <li class="nav-item" role="presentation">
               <button class="nav-link" id="pills-table-view-tab" data-bs-toggle="pill" data-bs-target="#pills-table-view" type="button" role="tab" aria-controls="pills-table-view" aria-selected="false">Table-view</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="pills-sp-view-tab" data-bs-toggle="pill" data-bs-target="#pills-sp-view" type="button" role="tab" aria-controls="pills-sp-view" aria-selected="false">SP-view</button>
             </li>
             <li class="nav-item  ml-auto" role="presentation">
               <button class="nav-link disabled" id="pills-time-view-tab" data-bs-toggle="pill" data-bs-target="#pills-time-view" type="button" role="tab" aria-controls="pills-time-view" aria-selected="false"></button>
@@ -138,6 +143,13 @@
                 </div>
               </div>
             </div>
+            <div class="tab-pane fade overflow-auto h-100" id="pills-sp-view" role="tabpanel" aria-labelledby="pills-sp-view-tab" tabindex="0">
+              <div class="row">
+                <div class="tab-pane">
+                  <div id="chart"></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -150,10 +162,12 @@
 <!-- Specific Page JS goes HERE  -->
 {% block javascripts %}
 <script src="/static/plugins/fullcalendar/main.js"></script>
-<script src="/kanban/static/js/kanban.js"></script>
 <script src="/static/plugins/jquery-ui/jquery-ui.min.js"></script>
 <script src="/static/plugins/popper/popper.min.js"></script>
 <script src="/static/plugins/tempusdominus/js/tempus-dominus.min.js"></script>
 <script src="/static/plugins/datatables/dataTables.js"></script>
+<script src="/static/plugins/d3/d3.min.js"></script>
+<script src="/static/plugins/c3/c3.min.js"></script>
+<script src="/kanban/static/js/kanban.js"></script>
 {% endblock javascripts %}
 
