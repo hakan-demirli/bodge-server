@@ -26,10 +26,7 @@ $(function () {
                 <i class="fas fa-ellipsis-v"></i>\
                 <i class="fas fa-ellipsis-v"></i>\
             </span>\
-            <div  class="icheck-success d-inline ml-2">\
-                <input type="checkbox" value="" name="todo${guid}" id="todoCheck${guid}" ${done ? "checked":""}>\
-                <label for="todoCheck${guid}"></label>\
-            </div>\
+            <input type="range" min="0" max="2" step="1" value="${done}" id="${guid}" class="subtask" />\
             <a href='#'><i class="fas fa-trash-alt todo-remove-icon float-right"></i></a>
             <span class="text" style="white-space: pre-line; width:100%;">${txt}</span>\
         </li>`;
@@ -197,7 +194,11 @@ $(function () {
                         childs:{}};
                     break;
                 case 'subtask':
-                    this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type_tpd][id_tpd]['childs'][id] = {done_state:done_state,txt:txt,done_time};
+                    this.projects[selected['root']]['childs'][selected['branch']]['childs'][selected['leaf']]['childs'][type_tpd][id_tpd]['childs'][id] = {
+                        done_state:done_state,
+                        txt:txt,
+                        prog_time:prog_time,
+                        done_time:done_time};
                     break;
             }
             this.recreateProjectsAccessible();
@@ -207,7 +208,7 @@ $(function () {
             let root_id    = this.projects_accessible['id'][id][0];
             let branch_id  = this.projects_accessible['id'][id][1];
             let leaf_id    = this.projects_accessible['id'][id][2];
-            let subtask_id = this.projects_accessible['id'][id][3];
+            let tpd_id     = this.projects_accessible['id'][id][3];
 
             switch(type) {
                 case 'root':
@@ -592,7 +593,12 @@ $(function () {
                 break;
                 case 'kanban-done-body':
                     dropped_card_body.toggleClass('done');
-                    kanban_data.add(card_id,'done',crd['txt'],crd['title'],crd['time'],crd['priority'],crd['prog_time'],formatDate(new Date()));
+                    let tm = formatDate(new Date());
+                    let prog_time = crd['prog_time'];
+                    if(prog_time === ''){
+                        prog_time = tm;
+                    }
+                    kanban_data.add(card_id,'done',crd['txt'],crd['title'],crd['time'],crd['priority'],prog_time,tm);
                     card_type_new = 'done';
                 break;
                 default:
@@ -600,7 +606,7 @@ $(function () {
             }
             for(let key in crd['childs']){
                 let sbtsk = crd['childs'][key];
-                kanban_data.add(key,'subtask',sbtsk['txt'],'',crd['time'],crd['priority'],'','',card_type_new,card_id,sbtsk['done_state']);
+                kanban_data.add(key,'subtask',sbtsk['txt'],'',crd['time'],crd['priority'],sbtsk['prog_time'],sbtsk['done_time'],card_type_new,card_id,sbtsk['done_state']);
             }
             kanbanWriteBackend();
         },
@@ -647,12 +653,48 @@ $(function () {
         $(e.target).closest('.card-saved .card-header #title a').attr('style', 'visibility: hidden !important');
     }
 
+    $('.card').on("input",'.subtask',function() {
+        let id = $(this).attr('id');
+        let tpd_subtask = $(this).val();
+        console.log(id,' ',tpd_subtask,' ');
+        let txt         = kanban_data.projects_accessible['subtask'][id]['txt'];
+        let prog_time   = kanban_data.projects_accessible['subtask'][id]['prog_time'];
+        let priority    = kanban_data.projects_accessible['subtask'][id]['priority'];
+        let tpd_id      = kanban_data.projects_accessible['id'][id][3];
+        let parent_id   = tpd_id;
+        let parent_type = kanban_data.type(tpd_id);
+
+        switch(tpd_subtask){
+            case '0':
+                kanban_data.add(id,'subtask',txt,'','',priority,'','',parent_type,parent_id,tpd_subtask);
+                break;
+            case '1':
+                kanban_data.add(id,'subtask',txt,'','',priority,formatDate(new Date()),'',parent_type,parent_id,tpd_subtask);
+                break;
+            case '2':
+                let tm = formatDate(new Date());
+                if(prog_time === ''){
+                    prog_time = tm;
+                }
+                kanban_data.add(id,'subtask',txt,'','',priority,prog_time,tm,parent_type,parent_id,tpd_subtask);
+                break;
+            default:
+                throw Error("Can't Slide ;(");
+        }
+        kanbanWriteBackend();
+    });
+
     $('.card').on("click",('.card-saved-body-rbl'),function(e) {
         let id = $(e.target).attr('id');
         selectCard(id);
         kanbanWriteBackend();
     });
 
+    $('.card').on("click",('.card-saved-body-rbl'),function(e) {
+        let id = $(e.target).attr('id');
+        selectCard(id);
+        kanbanWriteBackend();
+    });
 
     // <src="../plugins/moment/moment.min.js">
     /* initialize the external events
