@@ -471,7 +471,8 @@ $(function () {
         try{$(`.kanban-projects-root`).children('#kanban-projects-body').children(`.card`).children(`#${selected['root']}`).addClass('bg-info');}catch(err){}
         try{$(`.kanban-projects-branch`).children('#kanban-projects-body').children(`.card`).children(`#${selected['branch']}`).addClass('bg-info');}catch(err){}
         try{$(`.kanban-projects-leaf`).children('#kanban-projects-body').children(`.card`).children(`#${selected['leaf']}`).addClass('bg-info');}catch(err){}
-        updateRemaningTime(kanban_data.projects_accessible['leaf'][selected['leaf']]['time']);
+        if(selected['leaf']!='')
+            updateRemaningTime(kanban_data.projects_accessible['leaf'][selected['leaf']]['time']);
     }
 
     /**
