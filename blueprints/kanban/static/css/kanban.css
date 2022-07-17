@@ -33,6 +33,9 @@
 #pills-table-view{
     overflow-x: hidden !important;
 }
+#pills-sp-view{
+    overflow-x: hidden !important;
+}
 table.dataTable.row-border tbody th,
 table.dataTable.row-border tbody td,
 table.dataTable.display tbody th,
@@ -100,4 +103,33 @@ table.dataTable tfoot th {
     color: white;
     top: -10px;
     left: -6px;
+}
+
+.c3-tooltip td {
+    color: #222;
+}
+
+#chart svg {
+    background-color: #343a40;
+    border: 1px solid rgba(250, 250, 250, 0.125);
+    border-radius: 0.25rem;
+}
+
+path.domain { stroke: white !important; }
+.tick text { stroke: rgb(255, 255, 255); }
+.tick line { stroke: rgb(156, 156, 151) !important; }
+.c3-legend-item text { stroke: white; }
+
+.c3-axis-x, .c3-axis-y {
+    fill:none;
+    stroke:#fff !important;
+}
+
+.c3-line {
+    stroke-width: 3px !important;
+}
+
+#sp-info{
+    background-color: #3f474e;
+    border-radius: 0.25rem;
 }
