@@ -174,24 +174,9 @@ $(function () {
                         for(let tpd in this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs']){ // for every todo/prog/done of the leaf
                             for(let tpd_id in this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs'][tpd]){ // for every id in the todo/prog/done
                                 for(let subt_id in this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs'][tpd][tpd_id]['childs']){ // for every id in the subtasks
-                                    let t = this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs'][tpd][tpd_id]['childs'][subt_id]['done_time'];
-                                    t = new Date(t).getTime();
-                                    this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs'][tpd][tpd_id]['childs'][subt_id]['done_time'] = t;
-                                    t = this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs'][tpd][tpd_id]['childs'][subt_id]['prog_time'];
-                                    t = new Date(t).getTime();
-                                    this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs'][tpd][tpd_id]['childs'][subt_id]['prog_time'] = t;
                                     this.projects_accessible['subtask'][subt_id] = this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs'][tpd][tpd_id]['childs'][subt_id];
                                     this.projects_accessible['id'][subt_id] = [root_id,branch_id,leaf_id,tpd_id];
                                 }
-                                let t = this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs'][tpd][tpd_id]['done_time'];
-                                t = new Date(t).getTime();
-                                this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs'][tpd][tpd_id]['done_time'] = t;
-                                t = this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs'][tpd][tpd_id]['prog_time'];
-                                t = new Date(t).getTime();
-                                this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs'][tpd][tpd_id]['prog_time'] = t;
-                                t = this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs'][tpd][tpd_id]['time'];
-                                t = new Date(t).getTime();
-                                this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs'][tpd][tpd_id]['time'] = t;
                                 this.projects_accessible[tpd][tpd_id] = this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['childs'][tpd][tpd_id];
                                 this.projects_accessible['id'][tpd_id] = [root_id,branch_id,leaf_id];
                                 let sp = this.projects_accessible[tpd][tpd_id]['sp'];
@@ -200,9 +185,6 @@ $(function () {
                                 sp_total = sp_total + sp
                             }
                         }
-                        let t = this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['time'];
-                        t = new Date(t).getTime();
-                        this.projects[root_id]['childs'][branch_id]['childs'][leaf_id]['time'] = t;
                         this.projects_accessible['leaf'][leaf_id] = this.projects[root_id]['childs'][branch_id]['childs'][leaf_id];
                         this.projects_accessible['leaf'][leaf_id]['sp_done']  = sp_done;
                         this.projects_accessible['leaf'][leaf_id]['sp_total'] = sp_total;
@@ -328,7 +310,8 @@ $(function () {
         let priority = $(e.target.closest('.form-group')).children('.input-group').children('.input-group-append').children('.form-select').val();
         let sp       = parseInt($(e.target.closest('.form-group')).children('.input-group').children('.story-points').val());
 
-        if(time=="" && selected['leaf'] !== undefined){
+        time = new Date(time).getTime();
+        if(time==null && selected['leaf'] !== undefined){
             time = kanban_data.projects_accessible['leaf'][selected['leaf']]['time'];}
         let myguid = guid();
 
@@ -426,7 +409,7 @@ $(function () {
     }
 
     function updateRemaningTime(time){
-        if (time == ""){
+        if (time == null || time == 0){
             $('#pills-time-view-tab').text("");
             return
         }
@@ -649,7 +632,7 @@ $(function () {
                     let tm = new Date().getTime();
                     let prog_time = crd['prog_time'];
                     if(prog_time === null){
-                        prog_time = tm;
+                        prog_time = tm-1000;
                     }
                     kanban_data.add(card_id,'done',crd['txt'],crd['title'],crd['time'],crd['priority'],crd['sp'],prog_time,tm);
                     card_type_new = 'done';
@@ -760,11 +743,13 @@ $(function () {
             return;
         }
         let leaf = kanban_data.projects_accessible['leaf'][selected['leaf']];
-        if(leaf['time']==''){
+        if(leaf['time']==null || leaf['time']==0){
             $('#pills-time-view-tab').text('No leaf time.');
         }
         if($.isEmptyObject(leaf['childs']['done'])){
             $('#chart').html('');
+            $('#sp-predictions-title').html('');
+            $('#sp-predictions-body').html('');
             return;
         }
 
@@ -777,19 +762,19 @@ $(function () {
             chronicle_done.push(leaf['childs']['done'][done_id]);
         }
         chronicle_done.sort(function(a,b) {
-            return new Date(a.done_time).getTime() - new Date(b.done_time).getTime()
+            return a.done_time - b.done_time;
         });
-        time_points.push(new Date(chronicle_done[0]['prog_time']).getTime());
+        time_points.push(chronicle_done[0]['prog_time']);
         for(const item of chronicle_done){
             sp_points.push(sp_points[sp_points.length - 1] - item['sp']);
-            time_points.push(new Date(item['done_time']).getTime());
+            time_points.push(item['done_time']);
         }
 
         let sp_current = sp_points[sp_points.length - 1];
         let sp_future =  ['sp_future'].concat(Array(sp_points.length-2).fill(null));
         let sp_done = leaf['sp_total'] - sp_current;
-        let time_diff = (new Date(time_points[time_points.length - 1]).getTime()) - (new Date(time_points[1]).getTime());
-        let time_diff_min = (new Date(leaf['time']).getTime()) - (new Date().getTime());
+        let time_diff = time_points[time_points.length - 1] - time_points[1];
+        let time_diff_min = leaf['time'] - (new Date().getTime());
         let ms_per_sp = time_diff/parseFloat(sp_done);
         let ms_per_sp_min = time_diff_min/parseFloat(sp_current);
         let time_required = ms_per_sp*sp_current;
@@ -815,20 +800,20 @@ $(function () {
         if(time_diff_fnl==0){
             time_points.push(new Date(new Date().getTime() + (ms_per_future_point*(number_of_future_points+1))).getTime());
         }else{
-            time_points.push(new Date(new Date(time_points[time_points.length-1]).getTime() + (time_diff_fnl)).getTime());
+            time_points.push(new Date(time_points[time_points.length-1] + (time_diff_fnl)).getTime());
         }
-        console.log(time_points);
-        console.log(sp_points);
-        console.log(sp_future);
-        console.log(time_required);
-        let fail_limit = (new Date(leaf['time']).getTime())-(time_points[time_points.length-1]);
-        console.log(fail_limit);
-        console.log(ms_per_sp_min/ms_per_sp);
+        let fail_limit = leaf['time']-time_points[time_points.length-1];
         let sp_per_day = 86400000*(1/ms_per_sp);
         let sp_per_day_min = 86400000*(1/ms_per_sp_min);
         let sp_per_day_ratio = sp_per_day/sp_per_day_min;
-        let pred_title = (sp_per_day_ratio<1) ? (`YOU WILL FAIL!`) : (`Keep going, good job!`);
-        let speed_up_ratio = (sp_per_day_ratio<1) ? (`<div class="col-md-6" id="sp-info">Current Ratio:<font color="#ced4da" style="float: right;">${(1/sp_per_day_ratio).toFixed(2)}</font></div>`) : (``);
+        let pred_title = '';
+        if(leaf['time']==null || leaf['time']==0){
+            pred_title = '<font color="#beb533" style="float: right;">Ignore the stats. No leaf time.</font>';
+        }else{
+            pred_title = (sp_per_day_ratio<1) ? (`YOU WILL FAIL!`) : (`Keep going, good job!`);
+        }
+
+        let speed_up_ratio = (sp_per_day_ratio<1) ? (`<div class="col-md-6" id="sp-info">Increase your efficiency by:<font color="#ced4da" style="float: right;">${(1/sp_per_day_ratio).toFixed(2)}</font></div>`) : (``);
         $('#sp-predictions-title').html(pred_title);
         $('#sp-predictions-body').html(`<div class="col-md-6" id="sp-info">Story Points per day:<font color="#ced4da" style="float: right;">${(sp_per_day).toFixed(2)}</font></div>
                                         <div class="col-md-6" id="sp-info">Story Points per day minimum:<font color="#ced4da" style="float: right;">${(sp_per_day_min).toFixed(2)}</font></div>
