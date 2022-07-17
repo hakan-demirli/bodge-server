@@ -997,6 +997,7 @@ $(function () {
                 projects_table.row.add([event_id,
                                         event_raw['title'],
                                         event_raw['priority'],
+                                        event_raw['sp'],
                                         event_raw['prog_time'],
                                         event_raw['txt']]);
             }
