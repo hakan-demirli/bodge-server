@@ -14,7 +14,7 @@
 	font-size: 1.0em;
 	margin: 0;
 }
-.card-saved a{
+.hide-icon a{
     visibility:hidden;
 }
 .card-saved:hover a {

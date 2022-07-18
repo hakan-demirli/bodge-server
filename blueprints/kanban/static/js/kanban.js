@@ -93,19 +93,20 @@ $(function () {
         }
         let ak = `
         <div class="card card-saved" style="">
-            ${header ?(`<div class="card-header card-header-drag" ${bg_color}>
+            ${header ?(`<div class="card-header card-header-drag hide-icon" ${bg_color}>
                             <div id="title" style="float: left;">${title}</div>
                             <div class="ml-auto" style="float: right;">
                                 <div id="sp" style="float: left;">
                                     <font color="#d7c0ae">${sp}</font>
                                     &#128220;
                                 </div>
-                                <a href='#'  style="float: right; color: #fff;"><i class="fa-solid fa-pen-to-square"></i></a>
+                                <a href='#' style="float: right; color: #fff;"><i class="fa-solid fa-pen-to-square"></i></a>
                             </div>
+                            <a href='#'><i class="${icon}"></i></a>
                         </div>
-                        ${ak_time}`):('')}
+                        ${ak_time}`):(`<div class="hide-icon"><a href='#'><i class="${icon}"></i></a></div>`)}
             <div class="card-body card-saved-body-${header ? 'tpd':'rbl'} ${type}" id=${guid} style="white-space: pre-line">${txt}</div>
-            <a href='#'><i class="${icon}"></i></a>
+
             ${childs}
         </div>`;
         return ak;
