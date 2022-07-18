@@ -20,6 +20,9 @@
 .card-saved:hover a {
    visibility:visible;
 }
+.card-header-drag:hover{
+    cursor: move;
+}
 .fc .fc-list-sticky .fc-list-day > * {
 	background: var(--fc-page-bg-color, #4b6991);
 }

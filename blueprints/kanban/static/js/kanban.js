@@ -287,6 +287,9 @@ $(function () {
         e.target.closest('.card').remove();
         kanban_data.remove(id);
         kanbanWriteBackend();
+        if($('#pills-calendar-view').hasClass('active')){
+            renderCalendar();
+        }
     }
 
     function removeAddedProjectNode(e) {
