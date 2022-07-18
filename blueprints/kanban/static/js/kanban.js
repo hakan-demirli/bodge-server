@@ -54,7 +54,7 @@ $(function () {
             tmp = subtasks_body_up + savedSubtask(new_guid,done_state,txt) + subtasks_body_down;
             parent_card.children('.card-body').append(tmp);
         }else{
-            parent_card.children('.card').children('.todo-list').append(savedSubtask(new_guid,done_state,txt));
+            parent_card.children('.card-body').children('.card').children('.todo-list').append(savedSubtask(new_guid,done_state,txt));
         }
         kanban_data.add(new_guid,'subtask',txt,'',parent_time,parent_priority,0,'','',parent_type,parent_id,done_state);
         removeCard(e);
@@ -741,6 +741,9 @@ $(function () {
 
         if(selected['root'] == '' || selected['branch'] == '' || selected['leaf'] == ''){
             toastr.warning("No leaf is selected.");
+            $('#chart').html('');
+            $('#sp-predictions-title').html('');
+            $('#sp-predictions-body').html('');
             return;
         }
         let leaf = kanban_data.projects_accessible['leaf'][selected['leaf']];

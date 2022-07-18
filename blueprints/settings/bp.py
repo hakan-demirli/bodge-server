@@ -41,6 +41,8 @@ class MyBlueprint():
                 case 'PUSH':
                     info = subprocess.run(['git', '-C', str(self.user_data_folder),'init'])
                     print(info)
+                    info = subprocess.run(['git', '-C', str(self.user_data_folder),'pull'])
+                    print(info)
                     info = subprocess.run(['git', '-C', str(self.user_data_folder),'add','.'])
                     print(info)
                     info = subprocess.run(['git', '-C', str(self.user_data_folder),'commit','-m', str(datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S"))])
