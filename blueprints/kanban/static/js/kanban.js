@@ -127,9 +127,10 @@ $(function () {
                         <option value="5">5</option>
                     </select>
                 </div>
-                <input type="range" min="1" max="100" step="1" value="0" class="story-points" oninput="this.nextElementSibling.value = this.value" style="flex:auto; margin-left: 0.2rem;"/>
-                <output style="  margin-left: 0.6rem; margin-right: 0.6rem;">1</output>
-                <div style="margin-right: 0.8rem;">&#128220;</div>
+                <div class="sp-group" style="width: 100%; overflow: hidden;">
+                    <input type="range" min="1" max="100" step="1" value="0" class="story-points" oninput="this.nextElementSibling.value = this.value +'&#128220'" style="flex:auto; margin-left: 0.1rem;"/>
+                    <output class="float-right" style="  margin-left: 0.6rem; margin-right: 0.6rem;">1&#128220</output>
+                </div>
             </div>
             `):('')}
             <textarea class="form-control" rows="${row}" placeholder="..." id="content"></textarea>
@@ -312,7 +313,7 @@ $(function () {
         let title    = $(e.target.closest('.form-group')).children('.input-group').children('#title').val();
         let time     = $(e.target.closest('.form-group')).children('.input-group').children('#clock-add-time').val();
         let priority = $(e.target.closest('.form-group')).children('.input-group').children('.input-group-append').children('.form-select').val();
-        let sp       = parseInt($(e.target.closest('.form-group')).children('.input-group').children('.story-points').val());
+        let sp       = parseInt($(e.target.closest('.form-group')).children('.input-group').children('.sp-group').children('.story-points').val());
 
         time = new Date(time).getTime();
         if(time==null && selected['leaf'] !== undefined){
