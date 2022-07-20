@@ -1137,12 +1137,18 @@ $(function () {
         for(let type in types){
             for(let event_id in kanban_data.projects_accessible[type]){
                 let event_raw = kanban_data.projects_accessible[type][event_id];
+                let root_id    = kanban_data.projects_accessible['id'][event_id][0];
+                let branch_id  = kanban_data.projects_accessible['id'][event_id][1];
+                let root_txt = kanban_data.projects[root_id]['txt'];
+                let branch_txt = kanban_data.projects_accessible['branch'][branch_id]['txt'];
                 projects_table.row.add([event_id,
                                         event_raw['title'],
                                         event_raw['priority'],
                                         event_raw['sp'],
                                         formatDate(new Date(event_raw['prog_time'])),
-                                        event_raw['txt']]);
+                                        event_raw['txt'],
+                                        root_txt,
+                                        branch_txt]);
             }
         }
         projects_table.draw(false);
