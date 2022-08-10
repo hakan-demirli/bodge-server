@@ -1,12 +1,7 @@
 
-
-
-
-
-
 $(function () {
 
-$('#backup-button').on('click',function(e){
+$('#repo-submit').on('click',function(e){
     console.log('hi');
     settingsWriteBackend();
 });

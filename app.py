@@ -11,16 +11,21 @@ class MyFlaskServer():
     root_path = Path(__file__).parent
     blueprints_path = root_path / "blueprints"
     user_data_folder_path = root_path / 'data'
-    user_data_file_path = user_data_folder_path / 'base.json'
+    user_data_file_name = 'base.json'
+    user_data_file_path = user_data_folder_path / user_data_file_name
     user_data_json = {}
     blueprints = {}
     app = Flask(__name__)
+    app.config['SECRET_KEY'] = 'something-secret'
+    app.config['SIMPLELOGIN_USERNAME'] = 'chuck'
+    app.config['SIMPLELOGIN_PASSWORD'] = 'norris'
 
     def __init__(self):
-        self.app.config['SECRET_KEY'] = 'something-secret'
-        self.app.config['SIMPLELOGIN_USERNAME'] = 'chuck'
-        self.app.config['SIMPLELOGIN_PASSWORD'] = 'norris'
         SimpleLogin(self.app)
+        try: # __registerAllBlueprints imports the modules which use the user_data_folder_path
+            Path(self.user_data_folder_path).mkdir(parents=True)
+        except FileExistsError:
+            pass
         self.__registerAllBlueprints()
         if(not isfile(self.user_data_file_path)):
             self.__initUserData()
@@ -28,10 +33,6 @@ class MyFlaskServer():
         self.app.add_url_rule('/', 'root', login_required(self.__rootRoute), methods=["GET"])
 
     def __initUserData(self):
-        try:
-            Path(self.user_data_folder_path).mkdir(parents=True)
-        except FileExistsError:
-            pass
         self.user_data_json = {"sidebar": [], "navbar": {}, "settings":{}, "cards":[]}
         for key in self.blueprints:
             bp_inst = self.blueprints[key]
@@ -47,7 +48,7 @@ class MyFlaskServer():
             bp_module_name = str(path.relative_to(self.root_path).with_suffix('')).replace('\\','.') # windows path
             bp_module_name = bp_module_name.replace('/','.') # linux path
             bp_module = import_module(bp_module_name)
-            tmp = bp_module.MyBlueprint()
+            tmp = bp_module.MyBlueprint(self.user_data_folder_path)
             self.app.register_blueprint(tmp.bp)
             self.blueprints[tmp.bp.name] = tmp
 
@@ -71,4 +72,4 @@ class MyFlaskServer():
 
 if __name__ == "__main__":
     mfs = MyFlaskServer()
-    mfs.app.run(host='0.0.0.0',debug=False)
+    mfs.app.run(host='0.0.0.0',debug=True)

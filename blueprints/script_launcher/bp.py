@@ -10,7 +10,7 @@ class MyBlueprint():
                 url_prefix='/script_launcher',
                 template_folder='templates',
                 static_folder='static')
-    user_data_path = Path(__file__).parent / '../../data/script_launcher.json'
+    user_data_file_name = 'script_launcher.json'
     icon = 'fa-solid fa-table-columns'
     page = 0
     card = 1
@@ -18,7 +18,9 @@ class MyBlueprint():
     scripts_files = {}
     scripts = {}
 
-    def __init__(self):
+    def __init__(self,user_data_folder_path):
+        self.user_data_folder_path = user_data_folder_path
+        self.user_data_file_path = user_data_folder_path / self.user_data_file_name
         self.__find_scripts()
         self.__init_user_data()
         self.__update_scripts()
@@ -27,18 +29,18 @@ class MyBlueprint():
 
     def __init_user_data(self):
         dummy_json = {}
-        if(not os.path.isfile(self.user_data_path)):
+        if(not os.path.isfile(self.user_data_file_path)):
             for key,val in self.scripts_files.items():
                 dummy_json[key] = "off"
-            with open(self.user_data_path, 'w') as outfile:
+            with open(self.user_data_file_path, 'w') as outfile:
                 json.dump(dummy_json, outfile, indent=4)
         else:
-            with open(self.user_data_path) as json_file:
+            with open(self.user_data_file_path) as json_file:
                 dummy_json = json.load(json_file)
                 for key,val in self.scripts_files.items():
                     if (key not in dummy_json):
                         dummy_json[key] = "off"
-            with open(self.user_data_path, 'w') as outfile:
+            with open(self.user_data_file_path, 'w') as outfile:
                 json.dump(dummy_json, outfile, indent=4)
 
 
@@ -48,7 +50,7 @@ class MyBlueprint():
             self.scripts_files[script_name] = path
 
     def __update_scripts(self):
-        with open(self.user_data_path) as json_file:
+        with open(self.user_data_file_path) as json_file:
             jsn_usr = json.load(json_file)
             for script_name, path in self.scripts_files.items():
                 if ((script_name not in self.scripts) and (jsn_usr[script_name] == "on")):
@@ -66,10 +68,10 @@ class MyBlueprint():
         jsn_res = {}
         match req['command']:
             case 'READ':
-                with open(self.user_data_path) as json_file:
+                with open(self.user_data_file_path) as json_file:
                     jsn_res = json.load(json_file)
             case 'WRITE':
-                with open(self.user_data_path, 'w') as outfile:
+                with open(self.user_data_file_path, 'w') as outfile:
                     json.dump(req["script_list"], outfile, indent=4)
                 self.__update_scripts()
         return make_response(jsonify(jsn_res), 200)
