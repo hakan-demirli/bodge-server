@@ -16,21 +16,38 @@
   </ul>
   <div class="tab-content" id="pills-tabContent">
     <div class="tab-pane fade show active  h-100" id="pills-backup" role="tabpanel" aria-labelledby="pills-backup-tab" tabindex="0">
-      <div class="card card-primary">
-        <div class="card-header">
-          <h3 class="card-title">Cloud Backup</h3>
+      <div class="row">
+        <div class="col-md-9">
+          <div class="card card-primary">
+            <div class="card-header">
+              <h3 class="card-title">Cloud Backup</h3>
+            </div>
+            <form>
+              <div class="card-body">
+                <div class="form-group">
+                  <label>User Data Repository URL</label>
+                  <input type="url" class="form-control" id="git-repo" placeholder="Enter a git repo" disabled="">
+                </div>
+                <button id="repo-submit" type="button" class="btn btn-primary"><i id="repo-lock" class="fa-solid fa-lock"></i></button>
+                <hr>
+                <div class="form-group">
+                  <label>Sync User Repo</label> <br>
+                  <button id="repo-sync" type="button" class="btn btn-primary">Sync</button>
+                </div>
+              </div>
+            </form>
+          </div>
         </div>
-        <form>
-          <div class="card-body">
-            <div class="form-group">
-              <label>User Data Repo</label>
-              <input type="url" class="form-control" id="git-repo" placeholder="Enter a git repo">
+        <div class="col-md-3">
+          <div class="card card-primary">
+            <div class="card-header">
+              <h3 class="card-title">Error Logs</h3>
+            </div>
+            <div class="card-body">
+              <div id="error-log"></div>
             </div>
           </div>
-          <div class="card-footer">
-            <button id="repo-submit" class="btn btn-primary"><i class="fa-solid fa-lock-open"></i></button>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
     <div class="tab-pane fade" id="pills-idk" role="tabpanel" aria-labelledby="pills-idk-tab" tabindex="0">
