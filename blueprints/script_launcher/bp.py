@@ -11,7 +11,7 @@ class MyBlueprint():
                 template_folder='templates',
                 static_folder='static')
     user_data_file_name = 'script_launcher.json'
-    icon = 'fa-solid fa-table-columns'
+    icon = 'fa-solid fa-rocket'
     page = 0
     card = 1
     scripts_path = Path(__file__).parent / "scripts/"

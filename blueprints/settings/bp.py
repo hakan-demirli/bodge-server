@@ -10,7 +10,7 @@ class MyBlueprint():
                 template_folder='templates',
                 static_folder='static')
     user_data_file_name = 'settings.json'
-    icon = 'fa-solid fa-table-columns'
+    icon = 'fa-solid fa-gear'
     page = 1
     card = 0
     lock = threading.Lock()

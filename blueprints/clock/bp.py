@@ -10,7 +10,7 @@ class MyBlueprint():
                 template_folder='templates',
                 static_folder='static')
     user_data_file_name = 'clock.json'
-    icon = 'fa-solid fa-table-columns'
+    icon = 'fa-regular fa-clock'
     page = 0
     card = 1
 

@@ -10,7 +10,7 @@ class MyBlueprint():
                 template_folder='templates',
                 static_folder='static')
     user_data_file_name = 'calendar.json'
-    icon = 'fa-solid fa-border-all'
+    icon = 'fa-solid fa-calendar'
     page = 1
     card = 0
 
