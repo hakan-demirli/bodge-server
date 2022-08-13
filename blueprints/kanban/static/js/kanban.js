@@ -315,9 +315,14 @@ $(function () {
         let priority = $(e.target.closest('.form-group')).children('.input-group').children('.input-group-append').children('.form-select').val();
         let sp       = parseInt($(e.target.closest('.form-group')).children('.input-group').children('.sp-group').children('.story-points').val());
 
-        time = new Date(time).getTime();
-        if(time==null && selected['leaf'] !== undefined){
-            time = kanban_data.projects_accessible['leaf'][selected['leaf']]['time'];}
+        console.log(time);
+        if(time=="" && selected['leaf'] !== undefined){
+            time = kanban_data.projects_accessible['leaf'][selected['leaf']]['time'];
+            console.log("parent time copying");
+        }else{
+            time = new Date(time).getTime();
+        }
+        console.log(time);
         let myguid = guid();
 
         let tmp = $(e.target.closest(`#${e.data.extra.name}-card`)).find(`#${e.data.extra.name}-body`);
@@ -935,7 +940,7 @@ $(function () {
         // Movement of sidebar is slower than the render speed. Which causes an incorrect render.
         // Hence, call the render function after sidebar is fully extended. Which means waiting a little bit before requesting render.
         myTimeout = setTimeout(function(){calendar.updateSize();clearTimeout(myTimeout);}, 100);
-        setTimeout(calendarSizeFix, 200); // Ubuntu 20 LTS specific fix
+        setTimeout(calendarSizeFix, 100); // Ubuntu 20 LTS specific fix
     });
 
     function calendarSizeFix(){
@@ -950,26 +955,16 @@ $(function () {
         for(let type in types){
             for(let event_id in kanban_data.projects_accessible[type]){
                 let event_raw = kanban_data.projects_accessible[type][event_id];
-                let lid = kanban_data.projects_accessible['id'][event_id][2];
-                let l_time = new Date(kanban_data.projects_accessible['leaf'][lid]['time']);
                 let e_time = new Date(event_raw['time']);
-                let e_done_time = new Date(event_raw['done_time']);
-                let start_time = e_time;
-                let end_time = type==='done' ? e_done_time : new Date((e_time).getTime() + 1000);
-                let all_day = false;
+                let e_time_plus = new Date((e_time).getTime() + 1000);
 
-                if (l_time.getFullYear() === e_time.getFullYear() && l_time.getMonth() === e_time.getMonth() && l_time.getDate() === e_time.getDate()){
-                    start_time =  new Date();
-                    end_time = type==='done' ? e_done_time : l_time;
-                    all_day = true;
-                }
                 let event_calendar = {
                     id             : event_id,
                     title          : event_raw['title'],
                     groupId        : type,
-                    start          : start_time,
-                    end            : end_time,
-                    allDay         : all_day,
+                    start          : e_time,
+                    end            : e_time_plus,
+                    allDay         : false,
                     backgroundColor: '#ff73b7',
                     borderColor    : '#ff7fff'
                 };
