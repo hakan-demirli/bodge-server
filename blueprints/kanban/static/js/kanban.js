@@ -963,24 +963,39 @@ $(function () {
         for(let type in types){
             for(let event_id in kanban_data.projects_accessible[type]){
                 let event_raw = kanban_data.projects_accessible[type][event_id];
-                let e_time = new Date(event_raw['time']);
-                let e_time_plus = new Date((e_time).getTime() + 1000);
 
-                let event_calendar = {
+                let event = {
                     id             : event_id,
                     title          : event_raw['title'],
                     groupId        : type,
-                    start          : e_time,
-                    end            : e_time_plus,
+                    start          : event_raw['time'],
                     allDay         : false,
                     backgroundColor: '#ff73b7',
                     borderColor    : '#ff7fff'
                 };
-                calendar.addEvent(event_calendar);
+                calendar.addEvent(event);
             }
         }
+        createRecurringEvents();
     }
 
+    function createRecurringEvents(){
+        let event = {
+            id             : "my_id",
+            title          : "my_title",
+            groupId        : "recurring",
+            start          : "14/08/2022",
+            allDay         : false,
+            backgroundColor: '#0a73b0',
+            borderColor    : '#0f7ff0',
+            daysOfWeek     : [ '4' ],
+            startRecur     : '2022-08-14',
+            endRecur       : '2022-08-31'
+        };
+
+        calendar.addEvent(event);
+        console.log('hi');
+    }
     function hsv2Rgb(h,s,v){
         let f= (n,k=(n+h/60)%6) => v - v*s*Math.max( Math.min(k,4-k,1), 0);
         return [f(5),f(3),f(1)];
@@ -1128,7 +1143,13 @@ $(function () {
     }
 
     function initializeTable(){
+        let dateType = $.fn.dataTable.absoluteOrder( [
+            { value: "", position: 'bottom' }
+        ] );
         let projects_table = $('#table_id').DataTable({
+            columnDefs: [
+                { type: dateType, targets: 4 }
+            ],
             order: [[ 2, 'desc' ]]
         });
         projects_table.column(0).visible(false);
@@ -1145,11 +1166,14 @@ $(function () {
                 let branch_id  = kanban_data.projects_accessible['id'][event_id][1];
                 let root_txt = kanban_data.projects[root_id]['txt'];
                 let branch_txt = kanban_data.projects_accessible['branch'][branch_id]['txt'];
+                let time_raw = new Date(event_raw['time']);
+                let time = time_raw.getTime() == 0 ? "" : time_raw;
+
                 projects_table.row.add([event_id,
                                         event_raw['title'],
                                         event_raw['priority'],
                                         event_raw['sp'],
-                                        formatDate(new Date(event_raw['prog_time'])),
+                                        time,
                                         event_raw['txt'],
                                         root_txt,
                                         branch_txt]);
