@@ -234,10 +234,13 @@ $(function () {
         }
         remove(id){
             let type = this.type(id);
-            let root_id    = this.projects_accessible['id'][id][0];
-            let branch_id  = this.projects_accessible['id'][id][1];
-            let leaf_id    = this.projects_accessible['id'][id][2];
-            let tpd_id     = this.projects_accessible['id'][id][3];
+            let root_id,branch_id,leaf_id,tpd_id;
+            if(type != 'root'){
+                root_id    = this.projects_accessible['id'][id][0];
+                branch_id  = this.projects_accessible['id'][id][1];
+                leaf_id    = this.projects_accessible['id'][id][2];
+                tpd_id     = this.projects_accessible['id'][id][3];
+            }
 
             switch(type) {
                 case 'root':
@@ -319,7 +322,7 @@ $(function () {
         let priority = $(e.target.closest('.form-group')).children('.input-group').children('.input-group-append').children('.form-select').val();
         let sp       = parseInt($(e.target.closest('.form-group')).children('.input-group').children('.sp-group').children('.story-points').val());
 
-        if(time=="" && selected['leaf'] !== undefined){
+        if(time=="" && ((selected['leaf'] !== undefined) && (selected['leaf'] !== ""))){
             time = kanban_data.projects_accessible['leaf'][selected['leaf']]['time'];
         }else{
             time = new Date(time).getTime();
@@ -997,6 +1000,7 @@ $(function () {
                     title          : event_raw['title'],
                     groupId        : type,
                     start          : event_raw['time'],
+                    end            : event_raw['time']+1000,
                     allDay         : false,
                     backgroundColor: '#ff73b7',
                     borderColor    : '#ff7fff'

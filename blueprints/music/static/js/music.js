@@ -59,7 +59,10 @@ $(function () {
         }
         remove(id){
             let type = this.type(id);
-            let root_id    = this.projects_accessible['id'][id][0];
+            let root_id;
+            if(type != 'root'){
+                root_id    = this.projects_accessible['id'][id][0];
+            }
 
             switch(type) {
                 case 'root':

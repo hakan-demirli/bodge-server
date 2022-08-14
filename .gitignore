@@ -23,6 +23,7 @@ venv
 *.json
 *.jason
 *.ps1
+run.sh
 
 # sphinx docs
 _build
