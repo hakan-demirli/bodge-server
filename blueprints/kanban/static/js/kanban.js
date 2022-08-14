@@ -319,14 +319,11 @@ $(function () {
         let priority = $(e.target.closest('.form-group')).children('.input-group').children('.input-group-append').children('.form-select').val();
         let sp       = parseInt($(e.target.closest('.form-group')).children('.input-group').children('.sp-group').children('.story-points').val());
 
-        console.log(time);
         if(time=="" && selected['leaf'] !== undefined){
             time = kanban_data.projects_accessible['leaf'][selected['leaf']]['time'];
-            console.log("parent time copying");
         }else{
             time = new Date(time).getTime();
         }
-        console.log(time);
         let myguid = guid();
 
         let tmp = $(e.target.closest(`#${e.data.extra.name}-card`)).find(`#${e.data.extra.name}-body`);
@@ -532,6 +529,7 @@ $(function () {
         let entry = {
             projects: kanban_data.projects,
             selected: selected,
+            calendar_recurring: calendar_recurring,
             command: 'WRITE'
         };
 
@@ -901,6 +899,8 @@ $(function () {
 
     var Calendar = FullCalendar.Calendar;
     var calendarEl = document.getElementById('calendar');
+    var recurring_event_toggle = 1;
+    var kanban_event_toggle = 1;
     var calendar = new Calendar(calendarEl, {
         eventClick: function(info) {
             if(info.event.groupId != 'recurring') {
@@ -910,17 +910,41 @@ $(function () {
             }
         },
         customButtons: {
-            myCustomButton: {
-                text: '!',
+            toggle_recurring_events: {
+                text: 'RT',
                 click: function() {
-                    alert('clicked the custom button!');
+                    let allEvents = calendar.getEvents();
+                    for (let ev of allEvents) {
+                        if (ev.groupId == 'recurring') {
+                            if(recurring_event_toggle)
+                                ev.setProp("display", "none");
+                            else
+                                ev.setProp("display", "auto");
+                        }
+                    }
+                    recurring_event_toggle = !recurring_event_toggle;
+                }
+            },
+            toggle_kanban_events: {
+                text: 'KT',
+                click: function() {
+                    let allEvents = calendar.getEvents();
+                    for (let ev of allEvents) {
+                        if (ev.groupId != 'recurring') {
+                            if(kanban_event_toggle)
+                                ev.setProp("display", "none");
+                            else
+                                ev.setProp("display", "auto");
+                        }
+                    }
+                    kanban_event_toggle = !kanban_event_toggle;
                 }
             }
         },
         headerToolbar: {
             left  : 'prev,next today',
             center: 'title',
-            right : 'dayGridMonth,timeGridWeek,timeGridDay,listDay,listWeek,listMonth,myCustomButton,myCustomButton'
+            right : 'dayGridMonth,timeGridWeek,timeGridDay,listDay,listWeek,listMonth,toggle_recurring_events,toggle_kanban_events'
         },
         views: {
             listDay: { buttonText: 'list day' },
@@ -941,8 +965,6 @@ $(function () {
 
     var myTimeout;
     function renderCalendar(){
-        // calendar is distorted at the beginning. This is an official bug.
-        // Fix it by rendering it few times at the beginning.
         createEventsFromKanban();
         calendar.render();
     }
@@ -964,7 +986,8 @@ $(function () {
 
     function createEventsFromKanban(){
         calendar.removeAllEvents();
-        let types = {todo:'', prog:'',done:''};
+        let types = {todo:'', prog:''};
+        let events = [];
         for(let type in types){
             for(let event_id in kanban_data.projects_accessible[type]){
                 let event_raw = kanban_data.projects_accessible[type][event_id];
@@ -978,16 +1001,13 @@ $(function () {
                     backgroundColor: '#ff73b7',
                     borderColor    : '#ff7fff'
                 };
-                calendar.addEvent(event);
+                events.push(event);
             }
         }
-        createRecurringEvents();
-    }
-
-    function createRecurringEvents(){
         for(let index in calendar_recurring){
-            calendar.addEvent(calendar_recurring[index]);
+            events.push(calendar_recurring[index]);
         }
+        events.forEach(event => calendar.addEvent(event)); // too slow but I don't have a solution
     }
 
     function hsv2Rgb(h,s,v){
