@@ -904,10 +904,18 @@ $(function () {
             selectCard(kanban_data.projects_accessible['id'][info.event.id][1]);
             selectCard(kanban_data.projects_accessible['id'][info.event.id][2]);
         },
+        customButtons: {
+            myCustomButton: {
+                text: '!',
+                click: function() {
+                    alert('clicked the custom button!');
+                }
+            }
+        },
         headerToolbar: {
             left  : 'prev,next today',
             center: 'title',
-            right : 'dayGridMonth,timeGridWeek,timeGridDay,listDay,listWeek,listMonth'
+            right : 'dayGridMonth,timeGridWeek,timeGridDay,listDay,listWeek,listMonth,myCustomButton,myCustomButton'
         },
         views: {
             listDay: { buttonText: 'list day' },

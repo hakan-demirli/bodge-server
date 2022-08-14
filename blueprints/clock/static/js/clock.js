@@ -55,7 +55,7 @@ $(function () {
     const clock_remove_icon_class = 'clock-remove-icon';
 
     function clockListAddItemButton() {
-        let uid =  Date.now();
+        let uid =  guid();
         let txt_time = `${$('#'+clock_add_time_id).val()}`;
         let txt_name = `${$('#'+clock_add_name_id).val()}`;
         console.log(txt_time)
@@ -167,5 +167,22 @@ $(function () {
     $('#'+clock_add_button_id).on('click', clockListAddItemButton);
     $('#'+clock_list_id).on("click",('.'+clock_remove_icon_class),clockListRemoveItem);
     clockListReadBackend();
+
+
+
+    /**
+    * Generates a GUID string.
+    * @returns {string} The generated GUID.
+    * @example af8a8416-6e18-a307-bd9c-f2c947bbb3aa
+    * @author Slavik Meltser.
+    * @link http://slavik.meltser.info/?p=142
+    */
+     function guid() {
+        function _p8(s) {
+            var p = (Math.random().toString(16)+"000000000").substr(2,8);
+            return s ? "-" + p.substr(0,4) + "-" + p.substr(4,4) : p ;
+        }
+        return _p8() + _p8(true) + _p8(true) + _p8();
+    }
 })
 
