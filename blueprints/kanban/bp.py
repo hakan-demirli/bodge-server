@@ -25,10 +25,8 @@ class MyBlueprint():
     def __init_user_data(self):
         if(not os.path.isfile(self.user_data_file_path)):
             dummy_json = {"selected": {'root': '','branch': '','leaf': ''},
-                            "selected_old": {'root': '','branch': '','leaf': ''},
-                            "projects": {},
-                            "projects_accesable":  {'root': {},'branch': {},'leaf': {},'todo':{},'prog':{},'done':{}},
-                            'projects_selected':{}}
+                          "projects": {},
+                          "calendar_recurring": []}
             with open(self.user_data_file_path, 'w') as outfile:
                 json.dump(dummy_json, outfile, indent=4)
 

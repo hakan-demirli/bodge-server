@@ -273,6 +273,10 @@ $(function () {
         }
     }
 
+    var calendar_recurring;
+
+    var kanban_data = new KanbanDataClass({}, {root:{},branch:{},leaf:{},todo:{},prog:{},done:{}});
+
     function addEditCard(e){
         let ak = editCard(e.data.extra.row,e.data.extra.date,e.data.extra.summary);
         $(e.target.closest(`#${e.data.extra.name}-card`)).find(`#${e.data.extra.name}-body`).prepend(ak);
@@ -570,6 +574,7 @@ $(function () {
                 kanban_data.projects =  data['projects'];
                 kanban_data.recreateProjectsAccessible();
                 selected = data['selected'];
+                calendar_recurring = data['calendar_recurring'];
 
                 let tmp = '';
                 for(let key in kanban_data.projects){
@@ -599,11 +604,11 @@ $(function () {
 
     function formatDate(newDate) {
         if(newDate.getTime()>64){
-            var sMonth = padValue(newDate.getMonth() + 1);
-            var sDay = padValue(newDate.getDate());
-            var sYear = newDate.getFullYear();
-            var sHour = newDate.getHours();
-            var sMinute = padValue(newDate.getMinutes());
+            let sMonth = padValue(newDate.getMonth() + 1);
+            let sDay = padValue(newDate.getDate());
+            let sYear = newDate.getFullYear();
+            let sHour = newDate.getHours();
+            let sMinute = padValue(newDate.getMinutes());
             sHour = padValue(sHour);
             return sMonth + "/" + sDay + "/" + sYear + ", " + sHour + ":" + sMinute;
         }
@@ -667,8 +672,6 @@ $(function () {
     $('.connectedSortable .card-header-drag').css('cursor', 'move');
 
     window.onload = kanbanReadBackend();
-
-    var kanban_data = new KanbanDataClass({}, {root:{},branch:{},leaf:{},todo:{},prog:{},done:{}});
 
     $('#kanban-todo-card').children('.card-header').children('.card-tools').on("click",('.kanban-plus'),{ extra : {row:4,name:'kanban-todo',date:1,summary:1}},addEditCard);
     $('#kanban-todo-body').on("click",('#kanban-add-button'),{ extra : {name:'kanban-todo',icon:"fa-solid fa-square-xmark",header:1,type:'todo'}},saveCard);
@@ -900,9 +903,11 @@ $(function () {
     var calendarEl = document.getElementById('calendar');
     var calendar = new Calendar(calendarEl, {
         eventClick: function(info) {
-            selectCard(kanban_data.projects_accessible['id'][info.event.id][0]);
-            selectCard(kanban_data.projects_accessible['id'][info.event.id][1]);
-            selectCard(kanban_data.projects_accessible['id'][info.event.id][2]);
+            if(info.event.groupId != 'recurring') {
+                selectCard(kanban_data.projects_accessible['id'][info.event.id][0]);
+                selectCard(kanban_data.projects_accessible['id'][info.event.id][1]);
+                selectCard(kanban_data.projects_accessible['id'][info.event.id][2]);
+            }
         },
         customButtons: {
             myCustomButton: {
@@ -980,22 +985,11 @@ $(function () {
     }
 
     function createRecurringEvents(){
-        let event = {
-            id             : "my_id",
-            title          : "my_title",
-            groupId        : "recurring",
-            start          : "14/08/2022",
-            allDay         : false,
-            backgroundColor: '#0a73b0',
-            borderColor    : '#0f7ff0',
-            daysOfWeek     : [ '4' ],
-            startRecur     : '2022-08-14',
-            endRecur       : '2022-08-31'
-        };
-
-        calendar.addEvent(event);
-        console.log('hi');
+        for(let index in calendar_recurring){
+            calendar.addEvent(calendar_recurring[index]);
+        }
     }
+
     function hsv2Rgb(h,s,v){
         let f= (n,k=(n+h/60)%6) => v - v*s*Math.max( Math.min(k,4-k,1), 0);
         return [f(5),f(3),f(1)];
@@ -1167,7 +1161,7 @@ $(function () {
                 let root_txt = kanban_data.projects[root_id]['txt'];
                 let branch_txt = kanban_data.projects_accessible['branch'][branch_id]['txt'];
                 let time_raw = new Date(event_raw['time']);
-                let time = time_raw.getTime() == 0 ? "" : time_raw;
+                let time = time_raw.getTime() == 0 ? "" : formatDate(time_raw);
 
                 projects_table.row.add([event_id,
                                         event_raw['title'],

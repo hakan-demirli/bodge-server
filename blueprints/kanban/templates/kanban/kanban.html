@@ -54,111 +54,108 @@
           </div>
         </div>
       </div>
-      <div class="col-8"><!--downer-->
-        <div class=""> <!--this is the right side container.-->
-          <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-            <li class="nav-item" role="presentation">
-              <button class="nav-link active" id="pills-kanban-view-tab" data-bs-toggle="pill" data-bs-target="#pills-kanban-view" type="button" role="tab" aria-controls="pills-kanban-view" aria-selected="true">Kanban-view</button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link" id="pills-calendar-view-tab" data-bs-toggle="pill" data-bs-target="#pills-calendar-view" type="button" role="tab" aria-controls="pills-calendar-view" aria-selected="false">Calendar-view</button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link" id="pills-timeline-view-tab" data-bs-toggle="pill" data-bs-target="#pills-timeline-view" type="button" role="tab" aria-controls="pills-timeline-view" aria-selected="false">Timeline-view</button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link" id="pills-table-view-tab" data-bs-toggle="pill" data-bs-target="#pills-table-view" type="button" role="tab" aria-controls="pills-table-view" aria-selected="false">Table-view</button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link" id="pills-sp-view-tab" data-bs-toggle="pill" data-bs-target="#pills-sp-view" type="button" role="tab" aria-controls="pills-sp-view" aria-selected="false">SP-view</button>
-            </li>
-            <li class="nav-item  ml-auto" role="presentation">
-              <button class="nav-link disabled" id="pills-time-view-tab" data-bs-toggle="pill" data-bs-target="#pills-time-view" type="button" role="tab" aria-controls="pills-time-view" aria-selected="false"></button>
-            </li>
-          </ul>
-          <div class="tab-content " id="pills-tabContent">
-            <div class="tab-pane fade show active  h-100" id="pills-kanban-view" role="tabpanel" aria-labelledby="pills-kanban-view-tab" tabindex="0">
-              <div class="container-fluid h-100"> <!--this is the tab container.-->
-                <div class="card card-row card-primary" id="kanban-todo-card">
+      <div class="col-8"> <!--this is the right side container.-->
+        <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="pills-kanban-view-tab" data-bs-toggle="pill" data-bs-target="#pills-kanban-view" type="button" role="tab" aria-controls="pills-kanban-view" aria-selected="true">Kanban-view</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="pills-calendar-view-tab" data-bs-toggle="pill" data-bs-target="#pills-calendar-view" type="button" role="tab" aria-controls="pills-calendar-view" aria-selected="false">Calendar-view</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="pills-timeline-view-tab" data-bs-toggle="pill" data-bs-target="#pills-timeline-view" type="button" role="tab" aria-controls="pills-timeline-view" aria-selected="false">Timeline-view</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="pills-table-view-tab" data-bs-toggle="pill" data-bs-target="#pills-table-view" type="button" role="tab" aria-controls="pills-table-view" aria-selected="false">Table-view</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="pills-sp-view-tab" data-bs-toggle="pill" data-bs-target="#pills-sp-view" type="button" role="tab" aria-controls="pills-sp-view" aria-selected="false">SP-view</button>
+          </li>
+          <li class="nav-item  ml-auto" role="presentation">
+            <button class="nav-link disabled" id="pills-time-view-tab" data-bs-toggle="pill" data-bs-target="#pills-time-view" type="button" role="tab" aria-controls="pills-time-view" aria-selected="false"></button>
+          </li>
+        </ul>
+        <div class="tab-content " id="pills-tabContent">
+          <div class="tab-pane fade show active  h-100" id="pills-kanban-view" role="tabpanel" aria-labelledby="pills-kanban-view-tab" tabindex="0">
+            <div class="container-fluid h-100"> <!--this is the tab container.-->
+              <div class="card card-row card-primary" id="kanban-todo-card">
+                <div class="card-header">
+                  <h3 class="card-title">To Do</h3>
+                  <div class="card-tools" id="kanban-todo-tools">
+                    <a href="#" class="btn btn-tool kanban-plus">
+                      <i class="fas fa-plus"></i>
+                    </a>
+                  </div>
+                </div>
+                <div class="card-body connectedSortable" id="kanban-todo-body">
+                </div>
+              </div>
+              <div class="card card-row card-default" id="kanban-prog-card">
+                <div class="card-header bg-info">
+                  <h3 class="card-title">In Progress</h3>
+                </div>
+                <div class="card-body connectedSortable" id="kanban-prog-body">
+                </div>
+              </div>
+              <div class="card card-row card-success" id="kanban-done-card">
+                <div class="card-header">
+                  <h3 class="card-title">Done</h3>
+                </div>
+                <div class="card-body connectedSortable" id="kanban-done-body">
+                </div>
+              </div><!--here-->
+            </div>
+          </div>
+          <div class="tab-pane fade" id="pills-calendar-view" role="tabpanel" aria-labelledby="pills-calendar-view-tab" tabindex="0">
+            <div class="row">
+              <div class="card card-primary">
+                <div class="card-body p-0">
+                  <div id="calendar"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tab-pane fade overflow-auto h-100" id="pills-timeline-view" role="tabpanel" aria-labelledby="pills-timeline-view-tab" tabindex="0">
+            <div class="row">
+              <div class="tab-pane" id="timeline">
+                <div class="timeline">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tab-pane fade overflow-auto h-100" id="pills-table-view" role="tabpanel" aria-labelledby="pills-table-view-tab" tabindex="0">
+            <div class="row">
+              <div class="tab-pane">
+                <table id="table_id" class="display" class="table table-bordered table-hover dataTable dtr-inline" class="cell-border" >
+                  <thead>
+                      <tr>
+                        <th>Id</th>
+                        <th>Title</th>
+                        <th>Priority</th>
+                        <th>Story Points</th>
+                        <th>Time</th>
+                        <th>Content</th>
+                        <th>Root</th>
+                        <th>Branch</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                  </tbody>
+              </table>
+              </div>
+            </div>
+          </div>
+          <div class="tab-pane fade overflow-auto h-100" id="pills-sp-view" role="tabpanel" aria-labelledby="pills-sp-view-tab" tabindex="0">
+            <div class="row">
+              <div class="tab-pane">
+                <div id="chart">
+                </div>
+                <div class="card">
                   <div class="card-header">
-                    <h3 class="card-title">To Do</h3>
-                    <div class="card-tools" id="kanban-todo-tools">
-                      <a href="#" class="btn btn-tool kanban-plus">
-                        <i class="fas fa-plus"></i>
-                      </a>
-                    </div>
+                    <h3 class="card-title" id="sp-predictions-title">Predictions</h3>
                   </div>
-                  <div class="card-body connectedSortable" id="kanban-todo-body">
-                  </div>
-                </div>
-                <div class="card card-row card-default" id="kanban-prog-card">
-                  <div class="card-header bg-info">
-                    <h3 class="card-title">In Progress</h3>
-                  </div>
-                  <div class="card-body connectedSortable" id="kanban-prog-body">
-                  </div>
-                </div>
-                <div class="card card-row card-success" id="kanban-done-card">
-                  <div class="card-header">
-                    <h3 class="card-title">Done</h3>
-                  </div>
-                  <div class="card-body connectedSortable" id="kanban-done-body">
-                  </div>
-                </div><!--here-->
-              </div>
-            </div>
-            <div class="tab-pane fade" id="pills-calendar-view" role="tabpanel" aria-labelledby="pills-calendar-view-tab" tabindex="0">
-              <div class="row">
-                <div class="card card-primary">
-                  <div class="card-body p-0">
-                    <div id="calendar"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="tab-pane fade overflow-auto h-100" id="pills-timeline-view" role="tabpanel" aria-labelledby="pills-timeline-view-tab" tabindex="0">
-              <div class="row">
-                <div class="tab-pane" id="timeline">
-                  <div class="timeline">
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="tab-pane fade overflow-auto h-100" id="pills-table-view" role="tabpanel" aria-labelledby="pills-table-view-tab" tabindex="0">
-              <div class="row">
-                <div class="tab-pane">
-                  <table id="table_id" class="display" class="table table-bordered table-hover dataTable dtr-inline" class="cell-border" >
-                    <thead>
-                        <tr>
-                          <th>Id</th>
-                          <th>Title</th>
-                          <th>Priority</th>
-                          <th>Story Points</th>
-                          <th>Time</th>
-                          <th>Content</th>
-                          <th>Root</th>
-                          <th>Branch</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
-                </div>
-              </div>
-            </div>
-            <div class="tab-pane fade overflow-auto h-100" id="pills-sp-view" role="tabpanel" aria-labelledby="pills-sp-view-tab" tabindex="0">
-              <div class="row">
-                <div class="tab-pane">
-                  <div id="chart">
-                  </div>
-                  <div class="card">
-                    <div class="card-header">
-                      <h3 class="card-title" id="sp-predictions-title">Predictions</h3>
-                    </div>
-                    <div class="card-body" id="sp-predictions-body">
-                      <div class="col-md-3 col-sm-6 col-12" id="sp-info">
-                        hulo mikel
-                      </div>
+                  <div class="card-body" id="sp-predictions-body">
+                    <div class="col-md-3 col-sm-6 col-12" id="sp-info">
                     </div>
                   </div>
                 </div>
