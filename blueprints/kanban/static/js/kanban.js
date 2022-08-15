@@ -1166,7 +1166,7 @@ $(function () {
         ] );
         let projects_table = $('#table_id').DataTable({
             columnDefs: [
-                { type: dateType, targets: 4 }
+                { type: dateType, targets: [4,6] }
             ],
             order: [[ 2, 'desc' ]]
         });
@@ -1184,6 +1184,8 @@ $(function () {
                 let branch_id  = kanban_data.projects_accessible['id'][event_id][1];
                 let root_txt = kanban_data.projects[root_id]['txt'];
                 let branch_txt = kanban_data.projects_accessible['branch'][branch_id]['txt'];
+                let prog_time_raw = new Date(event_raw['prog_time']);
+                let prog_time = prog_time_raw.getTime() == 0 ? "" : formatDate(prog_time_raw);
                 let time_raw = new Date(event_raw['time']);
                 let time = time_raw.getTime() == 0 ? "" : formatDate(time_raw);
 
@@ -1193,7 +1195,7 @@ $(function () {
                                         event_raw['sp'],
                                         time,
                                         event_raw['txt'],
-                                        root_txt,
+                                        prog_time,
                                         branch_txt]);
             }
         }
