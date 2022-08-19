@@ -18,7 +18,7 @@ class MyBlueprint():
     scripts_files = {}
     scripts = {}
 
-    def __init__(self,user_data_folder_path):
+    def __init__(self,user_data_folder_path,socketio):
         self.user_data_folder_path = user_data_folder_path
         self.user_data_file_path = user_data_folder_path / self.user_data_file_name
         self.__find_scripts()

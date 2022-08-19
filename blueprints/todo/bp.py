@@ -14,7 +14,7 @@ class MyBlueprint():
     page = 0
     card = 1
 
-    def __init__(self,user_data_folder_path):
+    def __init__(self,user_data_folder_path,socketio):
         self.user_data_folder_path = user_data_folder_path
         self.user_data_file_path = user_data_folder_path / self.user_data_file_name
         self.__init_user_data()
