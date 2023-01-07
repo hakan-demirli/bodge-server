@@ -1,3 +1,4 @@
+Jira is just better. No need for this project. Archived.
 # Bodge Server
 My personal webserver.
 
