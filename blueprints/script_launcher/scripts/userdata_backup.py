@@ -34,7 +34,7 @@ except FileExistsError:
     pass
 
 print(my_datadir)
-user_data = pathlib.Path(__file__).parent.parent.parent
+user_data = pathlib.Path(__file__).parent.parent.parent.parent / 'data'
 print(user_data)
 backup_folder = my_datadir / "userdata_backup"
 
