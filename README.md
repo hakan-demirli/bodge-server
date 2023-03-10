@@ -1,5 +1,6 @@
 ~~Jira is just better. No need for this project. Archived.~~<br>
-Jira is slower than my grandma. Unarchived.
+~~Jira is slower than my grandma. Unarchived.~~<br>
+I switched to [taskwarrior](https://github.com/GothenburgBitFactory/taskwarrior). Archived.<br>
 # Bodge Server
 My personal webserver.
 
